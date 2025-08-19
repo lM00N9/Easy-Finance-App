@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EasyFinance - Financial Management System</title>
     <style>
-        /* CSS styles here (same as before) */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -339,14 +338,17 @@
             <p style="margin: 20px 0; color: #666;" data-lang="es">Sistema de Gestión Financiera Personal</p>
             <p style="margin: 20px 0; color: #666;" data-lang="en" class="hidden">Personal Financial Management System</p>
             <div class="form-group">
-                <input type="text" id="licenseKey" placeholder="Código de activación / Activation Code" style="text-align: center; font-weight: bold;">
+                <input type="password" id="licenseKey" placeholder="Código de acceso / Access code" style="text-align: center; font-weight: bold;">
             </div>
             <select id="languageSelectorAuth" style="width: 100%; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
                 <option value="es">Español</option>
                 <option value="en">English</option>
             </select>
             <button class="btn" id="loginBtn">Acceder al Sistema</button>
-            <p id="authMessage" style="color: red; margin-top: 15px;"></p>
+            <div id="accessDenied" class="access-denied hidden">
+                <span data-lang="es">❌ Acceso Denegado. Código incorrecto.</span>
+                <span data-lang="en" class="hidden">❌ Access Denied. Incorrect code.</span>
+            </div>
         </div>
 
         <div id="mainApp" class="app-container">
@@ -636,8 +638,8 @@
 
                         <h4 data-lang="es">6. Seguridad del Sistema</h4>
                         <h4 data-lang="en" class="hidden">6. System Security</h4>
-                        <p data-lang="es">EasyFinance está protegido con un código de activación único para cada usuario.</p>
-                        <p data-lang="en" class="hidden">EasyFinance is protected with a unique activation code for each user.</p>
+                        <p data-lang="es">EasyFinance está protegido con código de acceso.</p>
+                        <p data-lang="en" class="hidden">EasyFinance is protected with an access code.</p>
                     </div>
                 </div>
             </div>
@@ -649,1022 +651,714 @@
                 <h3 data-lang="es">🛠️ Administrar Transacciones</h3>
                 <h3 data-lang="en" class="hidden">🛠️ Manage Transactions</h3>
                 <div id="allTransactionsList">
-                    <p style="text-align: center; padding: 40px;" data-lang="es">No hay transacciones para administrar</p>
-                    <p style="text-align: center; padding: 40px;" data-lang="en" class="hidden">No transactions to manage</p>
+                    <p data-lang="es">No hay transacciones para administrar.</p>
+                    <p data-lang="en" class="hidden">There are no transactions to manage.</p>
                 </div>
-            </div>
-        </div>
-
-        <div id="reassignModal" class="modal">
-            <div class="modal-content">
-                <h3 data-lang="es">Categorías Asociadas Encontradas</h3>
-                <h3 data-lang="en" class="hidden">Associated Categories Found</h3>
-                <p data-lang="es">La categoría <strong id="oldCategoryName"></strong> tiene transacciones asociadas. Por favor, selecciona una nueva categoría para reasignarlas.</p>
-                <p data-lang="en" class="hidden">The category <strong id="oldCategoryNameEn"></strong> has associated transactions. Please select a new category to reassign them.</p>
-                <div class="form-group">
-                    <label data-lang="es">Nueva Categoría:</label>
-                    <label data-lang="en" class="hidden">New Category:</label>
-                    <select id="reassignCategorySelect"></select>
-                </div>
-                <button class="btn btn-success" id="reassignBtn">Reasignar y Eliminar</button>
-                <button class="btn btn-danger" id="cancelReassignBtn">Cancelar</button>
             </div>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script>
-        // System data management. localStorage is used for persistence.
-        let currentUser = 'user1';
-        let categoryToDeleteInfo = null;
-
-        const userData = {
-            user1: {
-                name: 'Usuario 1',
-                transactions: [],
-                categories: {
-                    income: ['Salario', 'Freelance', 'Bonos', 'Inversiones'],
-                    expense: ['Alimentación', 'Transporte', 'Entretenimiento', 'Servicios', 'Salud', 'Educación']
-                },
-                monthlyBudget: 3000
-            },
-            user2: {
-                name: 'Usuario 2', 
-                transactions: [],
-                categories: {
-                    income: ['Salario', 'Freelance', 'Bonos', 'Inversiones'],
-                    expense: ['Alimentación', 'Transporte', 'Entretenimiento', 'Servicios', 'Salud', 'Educación']
-                },
-                monthlyBudget: 3000
-            }
-        };
-
-        const translations = {
-            es: {
-                categories: {
-                    Salario: 'Salario', Freelance: 'Freelance', Bonos: 'Bonos', Inversiones: 'Inversiones',
-                    Alimentación: 'Alimentación', Transporte: 'Transporte', Entretenimiento: 'Entretenimiento',
-                    Servicios: 'Servicios', Salud: 'Salud', Educación: 'Educación'
-                },
-                '🔐 EasyFinance': '🔐 EasyFinance',
-                'Sistema de Gestión Financiera Personal': 'Sistema de Gestión Financiera Personal',
-                'Código de activación / Activation Code': 'Código de activación / Activation Code',
-                'Acceder al Sistema': 'Acceder al Sistema',
-                '💰 EasyFinance': '💰 EasyFinance',
-                '👤 Usuario:': '👤 Usuario:',
-                '📊 Dashboard - ': '📊 Dashboard - ',
-                '⚠️ Sobrepresupuesto - Los gastos del mes superan el presupuesto establecido': '⚠️ Sobrepresupuesto - Los gastos del mes superan el presupuesto establecido',
-                '💰 Ingresos del Mes': '💰 Ingresos del Mes',
-                '💸 Gastos del Mes': '💸 Gastos del Mes',
-                '💵 Balance': '💵 Balance',
-                '🎯 Presupuesto': '🎯 Presupuesto',
-                '📈 Distribución de Gastos': '📈 Distribución de Gastos',
-                'No hay gastos para mostrar en el gráfico de este mes.': 'No hay gastos para mostrar en el gráfico de este mes.',
-                '💳 Registro de Transacciones - ': '💳 Registro de Transacciones - ',
-                '➕ Nueva Transacción': '➕ Nueva Transacción',
-                'Tipo:': 'Tipo:',
-                'Ingreso': 'Ingreso',
-                'Gasto': 'Gasto',
-                'Categoría:': 'Categoría:',
-                'Monto:': 'Monto:',
-                'Descripción:': 'Descripción:',
-                'Fecha:': 'Fecha:',
-                'Agregar Transacción': 'Agregar Transacción',
-                '📋 Transacciones Recientes': '📋 Transacciones Recientes',
-                'No hay transacciones registradas': 'No hay transacciones registradas',
-                '🛠️ Administrar Transacciones': '🛠️ Administrar Transacciones',
-                '📈 Informes y Análisis - ': '📈 Informes y Análisis - ',
-                '📅 Seleccionar Período del Informe': '📅 Seleccionar Período del Informe',
-                'Fecha de inicio:': 'Fecha de inicio:',
-                'Fecha de fin:': 'Fecha de fin:',
-                'Generar Informe': 'Generar Informe',
-                'Hoy': 'Hoy',
-                'Esta Semana': 'Esta Semana',
-                'Este Mes': 'Este Mes',
-                'Este Año': 'Este Año',
-                'Seleccione las fechas de inicio y fin, luego genere el informe para ver los datos del período elegido': 'Seleccione las fechas de inicio y fin, luego genere el informe para ver los datos del período elegido',
-                'La fecha de inicio no puede ser posterior a la fecha de fin.': 'La fecha de inicio no puede ser posterior a la fecha de fin.',
-                'Total Ingresos': 'Total Ingresos',
-                'Total Gastos': 'Total Gastos',
-                'Balance del Período': 'Balance del Período',
-                'Resumen por Categoría': 'Resumen por Categoría',
-                'Categoría': 'Categoría',
-                'Ingresos': 'Ingresos',
-                'Gastos': 'Gastos',
-                'Balance': 'Balance',
-                '⚙️ Configuración - ': '⚙️ Configuración - ',
-                '👥 Nombres de Usuario': '👥 Nombres de Usuario',
-                'Nombre Usuario 1:': 'Nombre Usuario 1:',
-                'Actualizar Nombre': 'Actualizar Nombre',
-                'Nombre Usuario 2:': 'Nombre Usuario 2:',
-                '🎯 Presupuesto Mensual': '🎯 Presupuesto Mensual',
-                'Presupuesto:': 'Presupuesto:',
-                'Actualizar Presupuesto': 'Actualizar Presupuesto',
-                '🏷️ Categorías Personalizadas': '🏷️ Categorías Personalizadas',
-                'Categorías actuales:': 'Categorías actuales:',
-                'Agregar nueva categoría:': 'Agregar nueva categoría:',
-                'Tipo:': 'Tipo:',
-                'Eliminar categoría:': 'Eliminar categoría:',
-                'Seleccionar categoría...': 'Seleccionar categoría...',
-                '🗑️ Eliminar': '🗑️ Eliminar',
-                '📖 Manual de Instrucciones': '📖 Manual de Instrucciones',
-                '🚀 Cómo usar EasyFinance': '🚀 Cómo usar EasyFinance',
-                '1. Dashboard': '1. Dashboard',
-                '2. Registro de Transacciones': '2. Registro de Transacciones',
-                '3. Múltiples Usuarios': '3. Múltiples Usuarios',
-                '4. Informes Personalizables': '4. Informes Personalizables',
-                '5. Configuración': '5. Configuración',
-                '6. Seguridad del Sistema': '6. System Security',
-                'EasyFinance está protegido con un código de activación único para cada usuario.': 'EasyFinance está protegido con un código de activación único para cada usuario.',
-                'No hay transacciones para administrar': 'No hay transacciones para administrar',
-                'Categorías Asociadas Encontradas': 'Categorías Asociadas Encontradas',
-                'Nueva Categoría:': 'Nueva Categoría:',
-                'Reasignar y Eliminar': 'Reasignar y Eliminar',
-                'Cancelar': 'Cancelar',
-                'El dashboard muestra un resumen de tu situación financiera actual con ingresos, gastos, balance y alertas de presupuesto para el mes en curso.': 'El dashboard muestra un resumen de tu situación financiera actual con ingresos, gastos, balance y alertas de presupuesto para el mes en curso.',
-                'Ve a la pestaña "Transacciones", selecciona el tipo (Ingreso o Gasto), elige una categoría, ingresa el monto y descripción, selecciona la fecha y haz clic en "Agregar Transacción".': 'Ve a la pestaña "Transacciones", selecciona el tipo (Ingreso o Gasto), elige una categoría, ingresa el monto y descripción, selecciona la fecha y haz clic en "Agregar Transacción".',
-                'El sistema permite 2 usuarios con datos completamente independientes. Puedes personalizar los nombres de los usuarios desde la configuración y cambiar entre ellos desde la barra superior.': 'El sistema permite 2 usuarios con datos completamente independientes. Puedes personalizar los nombres de los usuarios desde la configuración y cambiar entre ellos desde la barra superior.',
-                'Genera informes de cualquier período seleccionando fechas de inicio y fin. Usa los botones rápidos para períodos comunes (hoy, semana, mes, año) o define tu propio rango personalizado.': 'Genera informes de cualquier período seleccionando fechas de inicio y fin. Usa los botones rápidos para períodos comunes (hoy, semana, mes, año) o define tu propio rango personalizado.',
-                'Personaliza los nombres de usuario, ajusta tu presupuesto mensual y gestiona categorías personalizadas desde la sección de configuración.': 'Personaliza los nombres de usuario, ajusta tu presupuesto mensual y gestiona categorías personalizadas desde la sección de configuración.',
-                'Por favor ingrese el código de acceso': 'Por favor ingrese el código de acceso',
-                'Incorrect access code': 'Código de acceso incorrecto',
-                'Por favor, complete todos los campos de la transacción.': 'Por favor, complete todos los campos de la transacción.',
-                '¿Estás seguro de que quieres eliminar esta transacción?': '¿Estás seguro de que quieres eliminar esta transacción?',
-                'Nombre actualizado exitosamente': 'Nombre actualizado exitosamente',
-                'Por favor, ingrese un valor de presupuesto válido.': 'Por favor, ingrese un valor de presupuesto válido.',
-                'La categoría ya existe.': 'La categoría ya existe.',
-                'Ingrese la traducción al inglés para la categoría:': 'Ingrese la traducción al inglés para la categoría:',
-                'Categoría agregada exitosamente.': 'Categoría agregada exitosamente.',
-                'La categoría no se ha guardado.': 'La categoría no se ha guardado.',
-                'Por favor, seleccione una categoría para eliminar.': 'Por favor, seleccione una categoría para eliminar.',
-                '¿Estás seguro de que quieres eliminar la categoría "${categoryName}"?': (categoryName) => `¿Estás seguro de que quieres eliminar la categoría "${categoryName}"?`,
-                'Por favor, selecciona una nueva categoría.': 'Por favor, selecciona una nueva categoría.',
-                'Categoría eliminada y transacciones reasignadas.': 'Categoría eliminada y transacciones reasignadas.',
-                'Código de activación no válido. Por favor, verifica el código.': 'Código de activación no válido. Por favor, verifica el código.',
-            },
-            en: {
-                categories: {
-                    Salario: 'Salary', Freelance: 'Freelance', Bonos: 'Bonuses', Inversiones: 'Investments',
-                    Alimentación: 'Food', Transporte: 'Transport', Entretenimiento: 'Entertainment',
-                    Servicios: 'Utilities', Salud: 'Health', Educación: 'Education'
-                },
-                '🔐 EasyFinance': '🔐 EasyFinance',
-                'Sistema de Gestión Financiera Personal': 'Personal Financial Management System',
-                'Código de activación / Activation Code': 'Activation Code',
-                'Acceder al Sistema': 'Access System',
-                '💰 EasyFinance': '💰 EasyFinance',
-                '👤 Usuario:': '👤 User:',
-                '📊 Dashboard - ': '📊 Dashboard - ',
-                '⚠️ Sobrepresupuesto - Los gastos del mes superan el presupuesto establecido': '⚠️ Overbudget - Monthly expenses exceed the set budget',
-                '💰 Ingresos del Mes': '💰 Monthly Income',
-                '💸 Gastos del Mes': '💸 Monthly Expenses',
-                '💵 Balance': '💵 Balance',
-                '🎯 Presupuesto': '🎯 Budget',
-                '📈 Distribución de Gastos': '📈 Expense Distribution',
-                'No hay gastos para mostrar en el gráfico de este mes.': 'No expenses to show in this month\'s chart.',
-                '💳 Registro de Transacciones - ': '💳 Transaction Log - ',
-                '➕ Nueva Transacción': '➕ New Transaction',
-                'Tipo:': 'Type:',
-                'Ingreso': 'Income',
-                'Gasto': 'Expense',
-                'Categoría:': 'Category:',
-                'Monto:': 'Amount:',
-                'Descripción:': 'Description:',
-                'Fecha:': 'Date:',
-                'Agregar Transacción': 'Add Transaction',
-                '📋 Transacciones Recientes': '📋 Recent Transactions',
-                'No hay transacciones registradas': 'No transactions registered',
-                '🛠️ Administrar Transacciones': '🛠️ Manage Transactions',
-                '📈 Informes y Análisis - ': '📈 Reports & Analysis - ',
-                '📅 Seleccionar Período del Informe': '📅 Select Report Period',
-                'Fecha de inicio:': 'Start Date:',
-                'Fecha de fin:': 'End Date:',
-                'Generar Informe': 'Generate Report',
-                'Hoy': 'Today',
-                'Esta Semana': 'This Week',
-                'Este Mes': 'This Month',
-                'Este Año': 'This Year',
-                'Seleccione las fechas de inicio y fin, luego genere el informe para ver los datos del período elegido': 'Select start and end dates, then generate the report to see data for the chosen period',
-                'La fecha de inicio no puede ser posterior a la fecha de fin.': 'The start date cannot be after the end date.',
-                'Total Ingresos': 'Total Income',
-                'Total Gastos': 'Total Expenses',
-                'Balance del Período': 'Period Balance',
-                'Resumen por Categoría': 'Summary by Category',
-                'Categoría': 'Category',
-                'Ingresos': 'Income',
-                'Gastos': 'Expenses',
-                'Balance': 'Balance',
-                '⚙️ Configuración - ': '⚙️ Settings - ',
-                '👥 Nombres de Usuario': '👥 User Names',
-                'Nombre Usuario 1:': 'User 1 Name:',
-                'Actualizar Nombre': 'Update Name',
-                'Nombre Usuario 2:': 'User 2 Name:',
-                '🎯 Presupuesto Mensual': '🎯 Monthly Budget',
-                'Presupuesto:': 'Budget:',
-                'Actualizar Presupuesto': 'Update Budget',
-                '🏷️ Categorías Personalizadas': '🏷️ Custom Categories',
-                'Categorías actuales:': 'Current categories:',
-                'Agregar nueva categoría:': 'Add new category:',
-                'Tipo:': 'Type:',
-                'Eliminar categoría:': 'Delete category:',
-                'Seleccionar categoría...': 'Select category...',
-                '🗑️ Eliminar': '🗑️ Delete',
-                '📖 Manual de Instrucciones': '📖 Instruction Manual',
-                '🚀 Cómo usar EasyFinance': '🚀 How to use EasyFinance',
-                '1. Dashboard': '1. Dashboard',
-                '2. Registro de Transacciones': '2. Transaction Log',
-                '3. Múltiples Usuarios': '3. Multiple Users',
-                '4. Informes Personalizables': '4. Customizable Reports',
-                '5. Configuración': '5. Settings',
-                '6. Seguridad del Sistema': '6. System Security',
-                'EasyFinance está protegido con un código de activación único para cada usuario.': 'EasyFinance is protected with a unique activation code for each user.',
-                'No hay transacciones para administrar': 'No transactions to manage',
-                'Categorías Asociadas Encontradas': 'Associated Categories Found',
-                'Nueva Categoría:': 'New Category:',
-                'Reasignar y Eliminar': 'Reassign and Delete',
-                'Cancelar': 'Cancel',
-                'El dashboard muestra un resumen de tu situación financiera actual con ingresos, gastos, balance y alertas de presupuesto para el mes en curso.': 'The dashboard shows a summary of your current financial situation with income, expenses, balance, and budget alerts for the current month.',
-                'Ve a la pestaña "Transacciones", selecciona el tipo (Ingreso o Gasto), elige una categoría, ingresa el monto y descripción, selecciona la fecha y haz clic en "Agregar Transacción".': 'Go to the "Transactions" tab, select the type (Income or Expense), choose a category, enter the amount and description, select the date, and click "Add Transaction".',
-                'El sistema permite 2 usuarios con datos completamente independientes. Puedes personalizar los nombres de los usuarios desde la configuración y cambiar entre ellos desde la barra superior.': 'The system allows for 2 users with completely independent data. You can customize user names from the settings and switch between them from the top bar.',
-                'Genera informes de cualquier período seleccionando fechas de inicio y fin. Usa los botones rápidos para períodos comunes (hoy, semana, mes, año) o define tu propio rango personalizado.': 'Generate reports for any period by selecting start and end dates. Use the quick buttons for common periods (today, week, month, year) or define your own custom range.',
-                'Personaliza los nombres de usuario, ajusta tu presupuesto mensual y gestiona categorías personalizadas desde la sección de configuración.': 'Customize user names, adjust your monthly budget, and manage custom categories from the settings section.',
-                'Por favor ingrese el código de acceso': 'Please enter the activation code',
-                'Incorrect access code': 'Incorrect activation code',
-                'Por favor, complete todos los campos de la transacción.': 'Please fill in all transaction fields.',
-                '¿Estás seguro de que quieres eliminar esta transacción?': 'Are you sure you want to delete this transaction?',
-                'Nombre actualizado exitosamente': 'Name updated successfully',
-                'Por favor, ingrese un valor de presupuesto válido.': 'Please enter a valid budget value.',
-                'La categoría ya existe.': 'The category already exists.',
-                'Ingrese la traducción al inglés para la categoría:': 'Enter the English translation for the category:',
-                'Categoría agregada exitosamente.': 'Category added successfully.',
-                'La categoría no se ha guardado.': 'Category not saved.',
-                'Por favor, seleccione una categoría para eliminar.': 'Please select a category to delete.',
-                '¿Estás seguro de que quieres eliminar la categoría "${categoryName}"?': (categoryName) => `Are you sure you want to delete the category "${categoryName}"?`,
-                'Por favor, selecciona una nueva categoría.': 'Please select a new category.',
-                'Categoría eliminada y transacciones reasignadas.': 'Category deleted and transactions re-assigned.',
-                'Código de activación no válido. Por favor, verifica el código.': 'Invalid activation code. Please check the code.',
-            }
-        };
-
-        let currentLang = 'es';
-        let categoryToDeleteInfo = null;
-        
-        // System data management. localStorage is used for persistence.
-        function saveData() {
-            localStorage.setItem('easyfinance_data', JSON.stringify(userData));
-        }
-
-        function loadData() {
-            const savedData = localStorage.getItem('easyfinance_data');
-            if (savedData) {
-                Object.assign(userData, JSON.parse(savedData));
-            }
-        }
-
-        function saveLanguagePreference() {
-            localStorage.setItem('easyfinance_lang', currentLang);
-        }
-
-        function loadLanguagePreference() {
-            const savedLang = localStorage.getItem('easyfinance_lang');
-            if (savedLang) {
-                currentLang = savedLang;
-                document.getElementById('languageSelectorAuth').value = currentLang;
-                if(document.getElementById('languageSelector')) {
-                    document.getElementById('languageSelector').value = currentLang;
-                }
-            }
-            switchLanguage(currentLang);
-        }
-
-        // --- Authentication and Security ---
-        async function authenticate() {
-            const licenseKey = document.getElementById('licenseKey').value.trim().toUpperCase();
-            const authMessage = document.getElementById('authMessage');
-
-            if (!licenseKey) {
-                authMessage.textContent = getTranslation('Por favor ingrese el código de acceso');
-                return;
-            }
-
-            try {
-                const response = await fetch('codes.txt');
-                if (!response.ok) {
-                    authMessage.textContent = 'Error de conexión. Por favor, intenta de nuevo.';
-                    return;
-                }
-                const text = await response.text();
-                const validCodes = text.split('\n').map(code => code.trim()).filter(code => code.length > 0);
-                
-                if (validCodes.includes(licenseKey)) {
-                    document.getElementById('authScreen').style.display = 'none';
-                    document.getElementById('mainApp').style.display = 'block';
-                    localStorage.setItem('easyfinance_auth_key', licenseKey);
-                } else {
-                    authMessage.textContent = getTranslation('Código de activación no válido. Por favor, verifica el código.');
-                }
-            } catch (error) {
-                console.error('Error de autenticación:', error);
-                authMessage.textContent = 'Error de conexión. Por favor, intenta de nuevo.';
-            }
-        }
-        
-        function checkAuth() {
-            const storedKey = localStorage.getItem('easyfinance_auth_key');
-            if (storedKey) {
-                document.getElementById('authScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
-            }
-        }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeEventListeners();
-            loadLanguagePreference();
-            checkAuth();
-            loadData();
-            updateUserDisplayNames();
-            updateDashboard();
-            updateCategoryDisplay();
-            updateDeleteCategorySelector();
-            updateCategoryOptions();
-            setDefaultDates();
-        });
-
-
-        // --- UI & Event Handlers ---
-        function initializeEventListeners() {
-            // Language Selector on Auth Screen
-            document.getElementById('languageSelectorAuth').addEventListener('change', function() {
-                switchLanguage(this.value);
-            });
-
-            // Authentication
-            document.getElementById('loginBtn').addEventListener('click', authenticate);
-            document.getElementById('licenseKey').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') authenticate();
-            });
-
-            // Navigation
+        document.addEventListener('DOMContentLoaded', () => {
+            const authScreen = document.getElementById('authScreen');
+            const mainApp = document.getElementById('mainApp');
+            const loginBtn = document.getElementById('loginBtn');
+            const licenseKeyInput = document.getElementById('licenseKey');
+            const accessDeniedAlert = document.getElementById('accessDenied');
+            const languageSelectorAuth = document.getElementById('languageSelectorAuth');
+            const languageSelector = document.getElementById('languageSelector');
             const navTabs = document.querySelectorAll('.nav-tab');
-            navTabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    showTab(this.dataset.tab);
-                });
-            });
-
-            // Language Selector inside app
-            document.getElementById('languageSelector').addEventListener('change', function() {
-                switchLanguage(this.value);
-            });
-
-            // User
-            document.getElementById('userSelector').addEventListener('change', switchUser);
-            document.getElementById('user1Name').addEventListener('change', updateUserDisplayNames);
-            document.getElementById('user2Name').addEventListener('change', updateUserDisplayNames);
-
-            // Transactions
-            document.getElementById('transactionType').addEventListener('change', updateCategoryOptions);
-            document.getElementById('addTransactionBtn').addEventListener('click', addTransaction);
-            document.getElementById('manageTransactionsBtn').addEventListener('click', showTransactionManager);
-
-            // Reports
-            document.getElementById('generateReportBtn').addEventListener('click', generateReport);
-
-            // Settings
-            document.getElementById('updateBudgetBtn').addEventListener('click', updateBudget);
-            document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
-            document.getElementById('deleteCategoryBtn').addEventListener('click', deleteCategory);
-
-            // Quick period buttons
-            document.querySelectorAll('[onclick^="setQuickPeriod"]').forEach(btn => {
-                const period = btn.getAttribute('onclick').match(/'(.*?)'/)[1];
-                btn.addEventListener('click', () => setQuickPeriod(period));
-            });
-
-
-            // Modal
-            document.getElementById('closeModal').addEventListener('click', closeTransactionModal);
-            window.addEventListener('click', function(event) {
-                const modal = document.getElementById('transactionModal');
-                if (event.target === modal) {
-                    closeTransactionModal();
-                }
-            });
-            document.getElementById('reassignBtn').addEventListener('click', reassignAndDelete);
-            document.getElementById('cancelReassignBtn').addEventListener('click', () => {
-                document.getElementById('reassignModal').style.display = 'none';
-            });
-        }
-
-        function switchLanguage(lang) {
-            currentLang = lang;
-            document.querySelectorAll('[data-lang]').forEach(el => {
-                if (el.dataset.lang === lang) {
-                    el.classList.remove('hidden');
-                } else {
-                    el.classList.add('hidden');
-                }
-            });
-
-            document.querySelectorAll('[data-translatable]').forEach(el => {
-                const originalText = el.getAttribute('data-translatable');
-                el.textContent = translations[currentLang][originalText] || originalText;
-            });
-            
-            saveLanguagePreference();
-            updateCategoryOptions();
-            updateDeleteCategorySelector();
-            updateUserDisplayNames();
-        }
-        
-        function getTranslation(key) {
-            if (typeof translations[currentLang][key] === 'function') {
-                return translations[currentLang][key];
-            }
-            return translations[currentLang][key] || key;
-        }
-
-        function showTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
-            document.getElementById(tabName).classList.remove('hidden');
-
-            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll(`.nav-tab[data-tab="${tabName}"]`).forEach(tab => tab.classList.add('active'));
-
-            if (tabName === 'dashboard') {
-                updateDashboard();
-            } else if (tabName === 'transactions') {
-                renderRecentTransactions();
-            } else if (tabName === 'reports') {
-                generateReport();
-            } else if (tabName === 'config') {
-                document.getElementById('monthlyBudget').value = getCurrentBudget();
-                updateCategoryDisplay();
-            }
-        }
-
-        function switchUser() {
-            currentUser = document.getElementById('userSelector').value;
-            updateUserDisplayNames();
-            updateDashboard();
-            updateCategoryOptions();
-            showTab('dashboard');
-        }
-
-        function updateUserName(user) {
-            const newName = document.getElementById(`config${user.charAt(0).toUpperCase() + user.slice(1)}Name`).value.trim();
-            if (newName) {
-                userData[user].name = newName;
-                updateUserDisplayNames();
-                saveData();
-                alert(getTranslation('Nombre actualizado exitosamente'));
-            }
-        }
-
-        function updateUserDisplayNames() {
-            const user1Name = document.getElementById('configUser1Name').value;
-            const user2Name = document.getElementById('configUser2Name').value;
-            
-            userData.user1.name = user1Name;
-            userData.user2.name = user2Name;
-            
+            const tabContents = document.querySelectorAll('.tab-content');
             const userSelector = document.getElementById('userSelector');
-            userSelector.innerHTML = `
-                <option value="user1">${user1Name}</option>
-                <option value="user2">${user2Name}</option>
-            `;
-            userSelector.value = currentUser;
-            
-            document.getElementById('currentUserDisplay').textContent = userData[currentUser].name;
-            document.getElementById('transactionsUserDisplay').textContent = userData[currentUser].name;
-            document.getElementById('reportsUserDisplay').textContent = userData[currentUser].name;
-            document.getElementById('configUserDisplay').textContent = userData[currentUser].name;
-            
-            document.getElementById('currentUserDisplayEn').textContent = userData[currentUser].name;
-            document.getElementById('transactionsUserDisplayEn').textContent = userData[currentUser].name;
-            document.getElementById('reportsUserDisplayEn').textContent = userData[currentUser].name;
-            document.getElementById('configUserDisplayEn').textContent = userData[currentUser].name;
-            
-            document.getElementById('user1Name').value = user1Name;
-            document.getElementById('user2Name').value = user2Name;
-        }
-
-        function getCurrentTransactions() {
-            return userData[currentUser].transactions;
-        }
-
-        function getCurrentCategories() {
-            return userData[currentUser].categories;
-        }
-
-        function getCurrentBudget() {
-            return userData[currentUser].monthlyBudget;
-        }
-
-        function updateDashboard() {
-            const today = new Date();
-            const currentMonth = today.getMonth();
-            const currentYear = today.getFullYear();
-            
-            let monthlyIncome = 0;
-            let monthlyExpenses = 0;
-
-            getCurrentTransactions().forEach(t => {
-                const tDate = new Date(t.date);
-                if (tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear) {
-                    if (t.type === 'income') {
-                        monthlyIncome += t.amount;
-                    } else {
-                        monthlyExpenses += t.amount;
-                    }
-                }
-            });
-
-            const balance = monthlyIncome - monthlyExpenses;
-            const monthlyBudget = getCurrentBudget();
-
-            document.getElementById('monthlyIncome').textContent = `$${monthlyIncome.toFixed(2)}`;
-            document.getElementById('monthlyExpenses').textContent = `$${monthlyExpenses.toFixed(2)}`;
-            document.getElementById('balance').textContent = `$${balance.toFixed(2)}`;
-            document.getElementById('budget').textContent = `$${monthlyBudget.toFixed(2)}`;
-
-            if (monthlyExpenses > monthlyBudget) {
-                document.getElementById('budgetAlert').style.display = 'block';
-            } else {
-                document.getElementById('budgetAlert').style.display = 'none';
-            }
-
-            renderCategoryChart();
-        }
-
-        function addTransaction() {
-            const type = document.getElementById('transactionType').value;
-            const category = document.getElementById('category').value;
-            const amount = parseFloat(document.getElementById('amount').value);
-            const description = document.getElementById('description').value.trim();
-            const date = document.getElementById('transactionDate').value;
-            
-            if (isNaN(amount) || amount <= 0 || !category || !description || !date) {
-                alert(getTranslation('Por favor, complete todos los campos de la transacción.'));
-                return;
-            }
-
-            const newTransaction = {
-                id: Date.now(),
-                type,
-                category,
-                amount,
-                description,
-                date
-            };
-
-            getCurrentTransactions().unshift(newTransaction);
-            saveData();
-            
-            document.getElementById('amount').value = '';
-            document.getElementById('description').value = '';
-
-            renderRecentTransactions();
-            updateDashboard();
-        }
-
-        function renderRecentTransactions() {
-            const transactionsList = document.getElementById('transactionsList');
-            const recentTransactions = getCurrentTransactions().slice(0, 5);
-            
-            if (recentTransactions.length === 0) {
-                transactionsList.innerHTML = `<p style="text-align: center; color: #666; padding: 40px;">${getTranslation('No hay transacciones registradas')}</p>`;
-                return;
-            }
-
-            transactionsList.innerHTML = '';
-            const table = document.createElement('table');
-            table.classList.add('table');
-            const headers = [getTranslation('Fecha'), getTranslation('Descripción'), getTranslation('Categoría'), getTranslation('Monto')];
-            table.innerHTML = `
-                <thead>
-                    <tr>
-                        <th>${headers[0]}</th>
-                        <th>${headers[1]}</th>
-                        <th>${headers[2]}</th>
-                        <th>${headers[3]}</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            `;
-
-            const tbody = table.querySelector('tbody');
-            recentTransactions.forEach(t => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${t.date}</td>
-                    <td>${t.description}</td>
-                    <td>${getTranslation('categories')[t.category] || t.category}</td>
-                    <td class="${t.type}">${t.type === 'expense' ? '-' : '+'}$${t.amount.toFixed(2)}</td>
-                `;
-                tbody.appendChild(row);
-            });
-
-            transactionsList.appendChild(table);
-        }
-
-        function showTransactionManager() {
-            const modal = document.getElementById('transactionModal');
-            const allTransactionsList = document.getElementById('allTransactionsList');
-            
-            const allTransactions = getCurrentTransactions().sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            if (allTransactions.length === 0) {
-                allTransactionsList.innerHTML = `<p style="text-align: center; padding: 40px;">${getTranslation('No hay transacciones para administrar')}</p>`;
-            } else {
-                allTransactionsList.innerHTML = '';
-                const table = document.createElement('table');
-                table.classList.add('table');
-                const headers = [getTranslation('Fecha'), getTranslation('Descripción'), getTranslation('Categoría'), getTranslation('Monto'), getTranslation('Acción')];
-                table.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th>${headers[0]}</th>
-                            <th>${headers[1]}</th>
-                            <th>${headers[2]}</th>
-                            <th>${headers[3]}</th>
-                            <th>${headers[4]}</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                `;
-                const tbody = table.querySelector('tbody');
-                allTransactions.forEach(t => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${t.date}</td>
-                        <td>${t.description}</td>
-                        <td>${getTranslation('categories')[t.category] || t.category}</td>
-                        <td class="${t.type}">${t.type === 'expense' ? '-' : '+'}$${t.amount.toFixed(2)}</td>
-                        <td><button class="btn btn-danger" onclick="deleteTransaction(${t.id})">${getTranslation('Eliminar')}</button></td>
-                    `;
-                    tbody.appendChild(row);
-                });
-                allTransactionsList.appendChild(table);
-            }
-
-            modal.style.display = 'block';
-        }
-
-        function closeTransactionModal() {
-            document.getElementById('transactionModal').style.display = 'none';
-            renderRecentTransactions();
-            updateDashboard();
-        }
-
-        function deleteTransaction(id) {
-            if (confirm(getTranslation('¿Estás seguro de que quieres eliminar esta transacción?'))) {
-                userData[currentUser].transactions = getCurrentTransactions().filter(t => t.id !== id);
-                saveData();
-                showTransactionManager();
-                updateDashboard();
-            }
-        }
-
-        function generateReport() {
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            const reportContent = document.getElementById('reportContent');
-            
-            if (!startDate || !endDate) {
-                reportContent.innerHTML = `<p>${getTranslation('Seleccione las fechas de inicio y fin, luego genere el informe para ver los datos del período elegido')}</p>`;
-                return;
-            }
-
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            
-            if (start > end) {
-                reportContent.innerHTML = `<p style="color: red;">${getTranslation('La fecha de inicio no puede ser posterior a la fecha de fin.')} </p>`;
-                return;
-            }
-
-            const filteredTransactions = getCurrentTransactions().filter(t => {
-                const tDate = new Date(t.date);
-                return tDate >= start && tDate <= end;
-            });
-
-            let totalIncome = 0;
-            let totalExpense = 0;
-            const categorySummary = {};
-
-            filteredTransactions.forEach(t => {
-                if (t.type === 'income') {
-                    totalIncome += t.amount;
-                } else {
-                    totalExpense += t.amount;
-                }
-                if (!categorySummary[t.category]) {
-                    categorySummary[t.category] = { income: 0, expense: 0 };
-                }
-                categorySummary[t.category][t.type] += t.amount;
-            });
-
-            let summaryHTML = `
-                <div class="dashboard-grid" style="margin-bottom: 20px;">
-                    <div class="kpi-card" style="background: #27ae60;">
-                        <h3>${getTranslation('Total Ingresos')}</h3>
-                        <div class="kpi-value">$${totalIncome.toFixed(2)}</div>
-                    </div>
-                    <div class="kpi-card" style="background: #e74c3c;">
-                        <h3>${getTranslation('Total Gastos')}</h3>
-                        <div class="kpi-value">$${totalExpense.toFixed(2)}</div>
-                    </div>
-                    <div class="kpi-card" style="background: #3498db;">
-                        <h3>${getTranslation('Balance del Período')}</h3>
-                        <div class="kpi-value">$${(totalIncome - totalExpense).toFixed(2)}</div>
-                    </div>
-                </div>
-
-                <h3>${getTranslation('Resumen por Categoría')}</h3>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>${getTranslation('Categoría')}</th>
-                            <th>${getTranslation('Ingresos')}</th>
-                            <th>${getTranslation('Gastos')}</th>
-                            <th>${getTranslation('Balance')}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            for (const category in categorySummary) {
-                const income = categorySummary[category].income;
-                const expense = categorySummary[category].expense;
-                summaryHTML += `
-                    <tr>
-                        <td>${getTranslation('categories')[category] || category}</td>
-                        <td class="income">$${income.toFixed(2)}</td>
-                        <td class="expense">$${expense.toFixed(2)}</td>
-                        <td>$${(income - expense).toFixed(2)}</td>
-                    </tr>
-                `;
-            }
-            summaryHTML += `</tbody></table>`;
-            reportContent.innerHTML = summaryHTML;
-        }
-
-        function setQuickPeriod(period) {
-            const today = new Date();
-            const startDate = document.getElementById('startDate');
-            const endDate = document.getElementById('endDate');
-            
-            switch(period) {
-                case 'today':
-                    startDate.value = today.toISOString().split('T')[0];
-                    endDate.value = today.toISOString().split('T')[0];
-                    break;
-                case 'week':
-                    const startOfWeek = new Date(today);
-                    startOfWeek.setDate(today.getDate() - today.getDay());
-                    startDate.value = startOfWeek.toISOString().split('T')[0];
-                    endDate.value = today.toISOString().split('T')[0];
-                    break;
-                case 'month':
-                    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-                    startDate.value = startOfMonth.toISOString().split('T')[0];
-                    endDate.value = today.toISOString().split('T')[0];
-                    break;
-                case 'year':
-                    const startOfYear = new Date(today.getFullYear(), 0, 1);
-                    startDate.value = startOfYear.toISOString().split('T')[0];
-                    endDate.value = today.toISOString().split('T')[0];
-                    break;
-            }
-        }
-
-        function setDefaultDates() {
-            const today = new Date();
-            const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-            
-            document.getElementById('startDate').value = startOfMonth.toISOString().split('T')[0];
-            document.getElementById('endDate').value = today.toISOString().split('T')[0];
-        }
-
-        function updateBudget() {
-            const newBudget = parseFloat(document.getElementById('monthlyBudget').value);
-            if (!isNaN(newBudget) && newBudget >= 0) {
-                userData[currentUser].monthlyBudget = newBudget;
-                saveData();
-                updateDashboard();
-                alert(getTranslation('Presupuesto mensual actualizado.'));
-            } else {
-                alert(getTranslation('Por favor, ingrese un valor de presupuesto válido.'));
-            }
-        }
-
-        function updateCategoryOptions() {
-            const type = document.getElementById('transactionType').value;
+            const currentUserDisplay = document.getElementById('currentUserDisplay');
+            const currentUserDisplayEn = document.getElementById('currentUserDisplayEn');
+            const transactionsUserDisplay = document.getElementById('transactionsUserDisplay');
+            const transactionsUserDisplayEn = document.getElementById('transactionsUserDisplayEn');
+            const reportsUserDisplay = document.getElementById('reportsUserDisplay');
+            const reportsUserDisplayEn = document.getElementById('reportsUserDisplayEn');
+            const configUserDisplay = document.getElementById('configUserDisplay');
+            const configUserDisplayEn = document.getElementById('configUserDisplayEn');
+            const user1NameInput = document.getElementById('user1Name');
+            const user2NameInput = document.getElementById('user2Name');
+            const configUser1NameInput = document.getElementById('configUser1Name');
+            const configUser2NameInput = document.getElementById('configUser2Name');
+            const monthlyIncomeDisplay = document.getElementById('monthlyIncome');
+            const monthlyExpensesDisplay = document.getElementById('monthlyExpenses');
+            const balanceDisplay = document.getElementById('balance');
+            const budgetDisplay = document.getElementById('budget');
+            const budgetAlert = document.getElementById('budgetAlert');
+            const monthlyBudgetInput = document.getElementById('monthlyBudget');
+            const updateBudgetBtn = document.getElementById('updateBudgetBtn');
+            const addTransactionBtn = document.getElementById('addTransactionBtn');
+            const transactionTypeSelect = document.getElementById('transactionType');
             const categorySelect = document.getElementById('category');
-            const categories = getCurrentCategories()[type];
-            
-            categorySelect.innerHTML = '';
-            categories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat;
-                option.textContent = getTranslation('categories')[cat] || cat;
-                categorySelect.appendChild(option);
-            });
-        }
-
-        function updateCategoryDisplay() {
+            const amountInput = document.getElementById('amount');
+            const descriptionInput = document.getElementById('description');
+            const transactionDateInput = document.getElementById('transactionDate');
+            const transactionsList = document.getElementById('transactionsList');
+            const manageTransactionsBtn = document.getElementById('manageTransactionsBtn');
+            const transactionModal = document.getElementById('transactionModal');
+            const closeModalBtn = document.getElementById('closeModal');
+            const allTransactionsList = document.getElementById('allTransactionsList');
+            const newCategoryInput = document.getElementById('newCategory');
+            const newCategoryTypeSelect = document.getElementById('newCategoryType');
+            const addCategoryBtn = document.getElementById('addCategoryBtn');
             const categoryListDisplay = document.getElementById('categoryListDisplay');
-            const allCategories = [...getCurrentCategories().income, ...getCurrentCategories().expense];
-            categoryListDisplay.innerHTML = allCategories.map(cat => `<span class="category-tag">${getTranslation('categories')[cat] || cat}</span>`).join('');
-        }
-        
-        function updateDeleteCategorySelector() {
             const categoryToDeleteSelect = document.getElementById('categoryToDelete');
-            const allCategories = [...getCurrentCategories().income, ...getCurrentCategories().expense];
-            
-            categoryToDeleteSelect.innerHTML = `<option value="">${getTranslation('Seleccionar categoría...')}</option>`;
-            allCategories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat;
-                option.textContent = getTranslation('categories')[cat] || cat;
-                categoryToDeleteSelect.appendChild(option);
-            });
-        }
+            const deleteCategoryBtn = document.getElementById('deleteCategoryBtn');
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            const generateReportBtn = document.getElementById('generateReportBtn');
+            const reportContentDiv = document.getElementById('reportContent');
+            const noChartDataP = document.getElementById('noChartData');
+            const chartCanvas = document.getElementById('categoryChart');
+            let expenseChart = null;
 
-        function addCategory() {
-            const newCategoryName = document.getElementById('newCategory').value.trim();
-            const newCategoryType = document.getElementById('newCategoryType').value;
-
-            if (!newCategoryName) {
-                alert(getTranslation('Por favor, ingrese un nombre para la categoría.'));
-                return;
-            }
-            
-            const allCategories = [...getCurrentCategories().income, ...getCurrentCategories().expense];
-            if (allCategories.includes(newCategoryName)) {
-                alert(getTranslation('La categoría ya existe.'));
-                return;
-            }
-
-            const newCategoryNameEn = prompt(getTranslation('Ingrese la traducción al inglés para la categoría:'), newCategoryName);
-            
-            if (newCategoryNameEn !== null && newCategoryNameEn.trim() !== '') {
-                userData[currentUser].categories[newCategoryType].push(newCategoryName);
-                translations.es.categories[newCategoryName] = newCategoryName;
-                translations.en.categories[newCategoryName] = newCategoryNameEn.trim();
-                saveData();
-                document.getElementById('newCategory').value = '';
-                
-                updateCategoryDisplay();
-                updateCategoryOptions();
-                updateDeleteCategorySelector();
-                alert(getTranslation('Categoría agregada exitosamente.'));
-            } else {
-                alert(getTranslation('La categoría no se ha guardado.'));
-            }
-        }
-        
-        function deleteCategory() {
-            const categoryName = document.getElementById('categoryToDelete').value;
-            if (!categoryName) {
-                alert(getTranslation('Por favor, seleccione una categoría para eliminar.'));
-                return;
-            }
-
-            const associatedTransactions = getCurrentTransactions().filter(t => t.category === categoryName);
-            if (associatedTransactions.length > 0) {
-                categoryToDeleteInfo = { name: categoryName };
-                document.getElementById('oldCategoryName').textContent = categoryName;
-                document.getElementById('oldCategoryNameEn').textContent = getTranslation('categories')[categoryName] || categoryName;
-                
-                const reassignSelect = document.getElementById('reassignCategorySelect');
-                reassignSelect.innerHTML = '';
-                const allCategories = [...getCurrentCategories().income, ...getCurrentCategories().expense];
-                allCategories.filter(cat => cat !== categoryName).forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat;
-                    option.textContent = getTranslation('categories')[cat] || cat;
-                    reassignSelect.appendChild(option);
-                });
-
-                document.getElementById('reassignModal').style.display = 'block';
-            } else {
-                const confirmMsg = getTranslation('¿Estás seguro de que quieres eliminar la categoría "${categoryName}"?')(categoryName);
-                if (confirm(confirmMsg)) {
-                    performDelete(categoryName);
-                }
-            }
-        }
-
-        function reassignAndDelete() {
-            const newCategory = document.getElementById('reassignCategorySelect').value;
-            if (!newCategory) {
-                alert(getTranslation('Por favor, selecciona una nueva categoría.'));
-                return;
-            }
-
-            const oldCategoryName = categoryToDeleteInfo.name;
-            const transactionsToUpdate = getCurrentTransactions().filter(t => t.category === oldCategoryName);
-            transactionsToUpdate.forEach(t => t.category = newCategory);
-
-            performDelete(oldCategoryName);
-            document.getElementById('reassignModal').style.display = 'none';
-        }
-
-        function performDelete(categoryName) {
-            for (const type in getCurrentCategories()) {
-                const index = userData[currentUser].categories[type].indexOf(categoryName);
-                if (index > -1) {
-                    userData[currentUser].categories[type].splice(index, 1);
-                }
-            }
-            saveData();
-            updateCategoryDisplay();
-            updateCategoryOptions();
-            updateDeleteCategorySelector();
-            updateDashboard();
-            alert(getTranslation('Categoría eliminada y transacciones reasignadas.'));
-        }
-
-        let categoryChartInstance = null;
-
-        function renderCategoryChart() {
-            const ctx = document.getElementById('categoryChart').getContext('2d');
-            const expensesByCategory = {};
-            const currentMonth = new Date().getMonth();
-            const currentYear = new Date().getFullYear();
-
-            getCurrentTransactions().forEach(t => {
-                const tDate = new Date(t.date);
-                if (t.type === 'expense' && tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear) {
-                    expensesByCategory[t.category] = (expensesByCategory[t.category] || 0) + t.amount;
-                }
-            });
-
-            const labels = Object.keys(expensesByCategory).map(cat => getTranslation('categories')[cat] || cat);
-            const data = Object.values(expensesByCategory);
-
-            const colors = [
-                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
-                '#E74C3C', '#2ECC71', '#3498DB', '#F1C40F', '#9B59B6', '#1ABC9C'
+            // 🔐 Códigos de acceso válidos
+            const VALID_ACCESS_CODES = [
+                'AC-0239', 'AC-0925', 'AC-1011', 'AC-1102', 'AC-2342',
+                'AC-3324', 'AC-4859', 'AC-7853', 'AC-8201', 'AC-9937'
             ];
 
-            const chartTitle = getTranslation('Distribución de Gastos del Mes');
-            const noDataMsg = getTranslation('No hay gastos para mostrar en el gráfico de este mes.');
-            
-            if (data.length === 0) {
-                document.getElementById('noChartData').textContent = noDataMsg;
-                document.getElementById('noChartData').style.display = 'block';
-                if (categoryChartInstance) {
-                    categoryChartInstance.destroy();
-                    categoryChartInstance = null;
-                }
-                document.getElementById('categoryChart').style.display = 'none';
-                return;
-            }
-
-            document.getElementById('noChartData').style.display = 'none';
-            document.getElementById('categoryChart').style.display = 'block';
-
-            if (categoryChartInstance) {
-                categoryChartInstance.destroy();
-            }
-
-            categoryChartInstance = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: colors.slice(0, labels.length)
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                font: {
-                                    size: 14,
-                                    family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
-                                }
-                            }
-                        },
-                        title: {
-                            display: false,
-                            text: chartTitle,
-                            font: {
-                                size: 18,
-                                family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
-                            }
+            let state = {
+                currentUser: 'user1',
+                users: {
+                    user1: {
+                        name: 'Usuario 1',
+                        budget: 3000,
+                        transactions: [],
+                        categories: {
+                            income: ['Salario', 'Freelance', 'Ventas'],
+                            expense: ['Alquiler', 'Comida', 'Transporte', 'Entretenimiento', 'Servicios', 'Compras']
+                        }
+                    },
+                    user2: {
+                        name: 'Usuario 2',
+                        budget: 3000,
+                        transactions: [],
+                        categories: {
+                            income: ['Salario', 'Inversiones'],
+                            expense: ['Viajes', 'Educación', 'Hogar']
                         }
                     }
                 }
+            };
+
+            const translations = {
+                es: {
+                    appName: 'EasyFinance',
+                    tagline: 'Sistema de Gestión Financiera Personal',
+                    accessCode: 'Código de acceso',
+                    loginBtn: 'Acceder al Sistema',
+                    dashboardTitle: '📊 Dashboard - ',
+                    transactionsTitle: '💳 Registro de Transacciones - ',
+                    reportsTitle: '📈 Informes y Análisis - ',
+                    configTitle: '⚙️ Configuración - ',
+                    incomeTitle: '💰 Ingresos del Mes',
+                    expensesTitle: '💸 Gastos del Mes',
+                    balanceTitle: '💵 Balance',
+                    budgetTitle: '🎯 Presupuesto',
+                    budgetAlert: '⚠️ Sobrepresupuesto - Los gastos del mes superan el presupuesto establecido',
+                    newTransactionTitle: '➕ Nueva Transacción',
+                    typeLabel: 'Tipo:',
+                    incomeOption: 'Ingreso',
+                    expenseOption: 'Gasto',
+                    categoryLabel: 'Categoría:',
+                    amountLabel: 'Monto:',
+                    descriptionLabel: 'Descripción:',
+                    dateLabel: 'Fecha:',
+                    addTransactionBtn: 'Agregar Transacción',
+                    recentTransactionsTitle: '📋 Transacciones Recientes',
+                    noTransactions: 'No hay transacciones registradas',
+                    manageTransactionsBtn: '🛠️ Administrar Transacciones',
+                    reportsPeriodTitle: '📅 Seleccionar Período del Informe',
+                    startDateLabel: 'Fecha de inicio:',
+                    endDateLabel: 'Fecha de fin:',
+                    generateReportBtn: 'Generar Informe',
+                    todayBtn: 'Hoy',
+                    weekBtn: 'Esta Semana',
+                    monthBtn: 'Este Mes',
+                    yearBtn: 'Este Año',
+                    reportPlaceholder: 'Seleccione las fechas de inicio y fin, luego genere el informe para ver los datos del período elegido',
+                    userNamesTitle: '👥 Nombres de Usuario',
+                    user1NameLabel: 'Nombre Usuario 1:',
+                    user2NameLabel: 'Nombre Usuario 2:',
+                    updateNameBtn: 'Actualizar Nombre',
+                    monthlyBudgetTitle: '🎯 Presupuesto Mensual',
+                    budgetLabel: 'Presupuesto:',
+                    updateBudgetBtn: 'Actualizar Presupuesto',
+                    customCategoriesTitle: '🏷️ Categorías Personalizadas',
+                    currentCategories: 'Categorías actuales:',
+                    addNewCategory: 'Agregar nueva categoría:',
+                    deleteCategory: 'Eliminar categoría:',
+                    addBtn: '➕ Agregar',
+                    deleteBtn: '🗑️ Eliminar',
+                    selectCategoryPlaceholder: 'Seleccionar categoría...',
+                    manualTitle: '📖 Manual de Instrucciones',
+                    manageModalTitle: '🛠️ Administrar Transacciones',
+                    noTransactionsModal: 'No hay transacciones para administrar.',
+                    accessDenied: '❌ Acceso Denegado. Código incorrecto.',
+                    dashboardUser: 'Usuario',
+                    transactionList: 'Lista de Transacciones',
+                    deleteConfirmation: '¿Estás seguro de que quieres eliminar esta transacción?',
+                    noChartData: 'No hay datos de gastos para mostrar en el gráfico.'
+                },
+                en: {
+                    appName: 'EasyFinance',
+                    tagline: 'Personal Financial Management System',
+                    accessCode: 'Access code',
+                    loginBtn: 'Access System',
+                    dashboardTitle: '📊 Dashboard - ',
+                    transactionsTitle: '💳 Transaction Log - ',
+                    reportsTitle: '📈 Reports & Analysis - ',
+                    configTitle: '⚙️ Settings - ',
+                    incomeTitle: '💰 Monthly Income',
+                    expensesTitle: '💸 Monthly Expenses',
+                    balanceTitle: '💵 Balance',
+                    budgetTitle: '🎯 Budget',
+                    budgetAlert: '⚠️ Overbudget - Monthly expenses exceed the set budget',
+                    newTransactionTitle: '➕ New Transaction',
+                    typeLabel: 'Type:',
+                    incomeOption: 'Income',
+                    expenseOption: 'Expense',
+                    categoryLabel: 'Category:',
+                    amountLabel: 'Amount:',
+                    descriptionLabel: 'Description:',
+                    dateLabel: 'Date:',
+                    addTransactionBtn: 'Add Transaction',
+                    recentTransactionsTitle: '📋 Recent Transactions',
+                    noTransactions: 'No transactions registered',
+                    manageTransactionsBtn: '🛠️ Manage Transactions',
+                    reportsPeriodTitle: '📅 Select Report Period',
+                    startDateLabel: 'Start Date:',
+                    endDateLabel: 'End Date:',
+                    generateReportBtn: 'Generate Report',
+                    todayBtn: 'Today',
+                    weekBtn: 'This Week',
+                    monthBtn: 'This Month',
+                    yearBtn: 'This Year',
+                    reportPlaceholder: 'Select start and end dates, then generate the report to see data for the chosen period',
+                    userNamesTitle: '👥 User Names',
+                    user1NameLabel: 'User 1 Name:',
+                    user2NameLabel: 'User 2 Name:',
+                    updateNameBtn: 'Update Name',
+                    monthlyBudgetTitle: '🎯 Monthly Budget',
+                    budgetLabel: 'Budget:',
+                    updateBudgetBtn: 'Update Budget',
+                    customCategoriesTitle: '🏷️ Custom Categories',
+                    currentCategories: 'Current categories:',
+                    addNewCategory: 'Add new category:',
+                    deleteCategory: 'Delete category:',
+                    addBtn: '➕ Add',
+                    deleteBtn: '🗑️ Delete',
+                    selectCategoryPlaceholder: 'Select category...',
+                    manualTitle: '📖 Instruction Manual',
+                    manageModalTitle: '🛠️ Manage Transactions',
+                    noTransactionsModal: 'There are no transactions to manage.',
+                    accessDenied: '❌ Access Denied. Incorrect code.',
+                    dashboardUser: 'User',
+                    transactionList: 'Transaction List',
+                    deleteConfirmation: 'Are you sure you want to delete this transaction?',
+                    noChartData: 'No expense data to display on the chart.'
+                }
+            };
+            
+            function saveState() {
+                localStorage.setItem('easyFinanceState', JSON.stringify(state));
+            }
+
+            function loadState() {
+                const savedState = localStorage.getItem('easyFinanceState');
+                if (savedState) {
+                    state = JSON.parse(savedState);
+                    updateUI();
+                }
+            }
+
+            function updateUI() {
+                updateUserNames();
+                updateBudgetDisplay();
+                updateCategoryLists();
+                calculateDashboard();
+                renderTransactions();
+                renderExpenseChart();
+                updateLanguage(languageSelector.value);
+            }
+            
+            function updateLanguage(lang) {
+                document.querySelectorAll('[data-lang]').forEach(element => {
+                    if (element.getAttribute('data-lang') === lang) {
+                        element.classList.remove('hidden');
+                    } else {
+                        element.classList.add('hidden');
+                    }
+                });
+
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    const tabId = tab.id;
+                    const tabButton = document.querySelector(`.nav-tab[data-tab="${tabId}"]`);
+                    if (tabButton.classList.contains('active')) {
+                        tab.classList.remove('hidden');
+                    }
+                });
+            }
+
+            function updateUserNames() {
+                document.getElementById('user1Name').value = state.users.user1.name;
+                document.getElementById('user2Name').value = state.users.user2.name;
+                document.getElementById('configUser1Name').value = state.users.user1.name;
+                document.getElementById('configUser2Name').value = state.users.user2.name;
+
+                const user1Option = userSelector.querySelector('option[value="user1"]');
+                const user2Option = userSelector.querySelector('option[value="user2"]');
+                user1Option.textContent = state.users.user1.name;
+                user2Option.textContent = state.users.user2.name;
+
+                userSelector.value = state.currentUser;
+                updateCurrentUserDisplay();
+                saveState();
+            }
+
+            function updateCurrentUserDisplay() {
+                const userName = state.users[state.currentUser].name;
+                currentUserDisplay.textContent = userName;
+                currentUserDisplayEn.textContent = userName;
+                transactionsUserDisplay.textContent = userName;
+                transactionsUserDisplayEn.textContent = userName;
+                reportsUserDisplay.textContent = userName;
+                reportsUserDisplayEn.textContent = userName;
+                configUserDisplay.textContent = userName;
+                configUserDisplayEn.textContent = userName;
+            }
+
+            function calculateDashboard() {
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+
+                let monthlyIncome = 0;
+                let monthlyExpenses = 0;
+                let totalBalance = 0;
+
+                state.users[state.currentUser].transactions.forEach(t => {
+                    const tDate = new Date(t.date);
+                    if (tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear) {
+                        if (t.type === 'income') {
+                            monthlyIncome += t.amount;
+                        } else if (t.type === 'expense') {
+                            monthlyExpenses += t.amount;
+                        }
+                    }
+                    if (t.type === 'income') {
+                        totalBalance += t.amount;
+                    } else if (t.type === 'expense') {
+                        totalBalance -= t.amount;
+                    }
+                });
+
+                monthlyIncomeDisplay.textContent = `$${monthlyIncome.toFixed(2)}`;
+                monthlyExpensesDisplay.textContent = `$${monthlyExpenses.toFixed(2)}`;
+                balanceDisplay.textContent = `$${totalBalance.toFixed(2)}`;
+                
+                if (monthlyExpenses > state.users[state.currentUser].budget) {
+                    budgetAlert.style.display = 'block';
+                } else {
+                    budgetAlert.style.display = 'none';
+                }
+            }
+
+            function renderTransactions() {
+                transactionsList.innerHTML = '';
+                const transactions = state.users[state.currentUser].transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                if (transactions.length === 0) {
+                    const noTransactionsP = document.createElement('p');
+                    noTransactionsP.style.textAlign = 'center';
+                    noTransactionsP.style.color = '#666';
+                    noTransactionsP.style.padding = '40px';
+                    noTransactionsP.textContent = translations[languageSelector.value].noTransactions;
+                    transactionsList.appendChild(noTransactionsP);
+                    return;
+                }
+
+                transactions.forEach(t => {
+                    const transactionDiv = document.createElement('div');
+                    transactionDiv.style.padding = '10px';
+                    transactionDiv.style.borderBottom = '1px solid #eee';
+                    transactionDiv.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong class="${t.type}">${t.type === 'income' ? '➕' : '➖'} $${t.amount.toFixed(2)}</strong>
+                                <br>
+                                <span style="font-size: 0.9em; color: #555;">${t.description}</span>
+                            </div>
+                            <span style="font-size: 0.8em; color: #888;">${t.date}</span>
+                        </div>
+                    `;
+                    transactionsList.appendChild(transactionDiv);
+                });
+            }
+
+            function renderExpenseChart() {
+                if (expenseChart) {
+                    expenseChart.destroy();
+                }
+
+                const expenses = state.users[state.currentUser].transactions.filter(t => t.type === 'expense');
+                if (expenses.length === 0) {
+                    chartCanvas.style.display = 'none';
+                    noChartDataP.style.display = 'block';
+                    noChartDataP.textContent = translations[languageSelector.value].noChartData;
+                    return;
+                }
+                
+                chartCanvas.style.display = 'block';
+                noChartDataP.style.display = 'none';
+                
+                const expenseData = {};
+                expenses.forEach(e => {
+                    expenseData[e.category] = (expenseData[e.category] || 0) + e.amount;
+                });
+
+                const data = {
+                    labels: Object.keys(expenseData),
+                    datasets: [{
+                        data: Object.values(expenseData),
+                        backgroundColor: [
+                            '#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#9b59b6', '#34495e',
+                            '#1abc9c', '#e67e22', '#c0392b', '#7f8c8d'
+                        ]
+                    }]
+                };
+
+                expenseChart = new Chart(chartCanvas, {
+                    type: 'doughnut',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(tooltipItem) {
+                                        return `${tooltipItem.label}: $${tooltipItem.raw.toFixed(2)}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderReport(transactions) {
+                if (transactions.length === 0) {
+                    reportContentDiv.innerHTML = `<p style="text-align: center; color: #666; padding: 40px;" data-lang="es">No hay transacciones en el período seleccionado.</p>
+                                                   <p class="hidden" data-lang="en">No transactions in the selected period.</p>`;
+                    return;
+                }
+
+                const incomeTotal = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+                const expenseTotal = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+                const balance = incomeTotal - expenseTotal;
+                
+                let reportHTML = `
+                    <div style="margin-top: 20px;">
+                        <h3 data-lang="es">Resumen del Período</h3>
+                        <h3 data-lang="en" class="hidden">Period Summary</h3>
+                        <p><strong>Ingresos Totales:</strong> <span class="income">$${incomeTotal.toFixed(2)}</span></p>
+                        <p><strong>Gastos Totales:</strong> <span class="expense">$${expenseTotal.toFixed(2)}</span></p>
+                        <p><strong>Balance Neto:</strong> <span style="color: ${balance >= 0 ? '#27ae60' : '#e74c3c'};">$${balance.toFixed(2)}</span></p>
+                    </div>
+                    <h3 style="margin-top: 20px;" data-lang="es">Detalle de Transacciones</h3>
+                    <h3 style="margin-top: 20px;" data-lang="en" class="hidden">Transaction Details</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th data-lang="es">Fecha</th>
+                                <th class="hidden" data-lang="en">Date</th>
+                                <th data-lang="es">Descripción</th>
+                                <th class="hidden" data-lang="en">Description</th>
+                                <th data-lang="es">Categoría</th>
+                                <th class="hidden" data-lang="en">Category</th>
+                                <th data-lang="es">Tipo</th>
+                                <th class="hidden" data-lang="en">Type</th>
+                                <th data-lang="es">Monto</th>
+                                <th class="hidden" data-lang="en">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${transactions.map(t => `
+                                <tr>
+                                    <td>${t.date}</td>
+                                    <td>${t.description}</td>
+                                    <td>${t.category}</td>
+                                    <td class="${t.type}"><strong data-lang="es">${t.type === 'income' ? 'Ingreso' : 'Gasto'}</strong><strong class="hidden" data-lang="en">${t.type === 'income' ? 'Income' : 'Expense'}</strong></td>
+                                    <td class="${t.type}">$${t.amount.toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                reportContentDiv.innerHTML = reportHTML;
+                updateLanguage(languageSelector.value);
+            }
+
+            function updateBudgetDisplay() {
+                budgetDisplay.textContent = `$${state.users[state.currentUser].budget.toLocaleString()}`;
+                monthlyBudgetInput.value = state.users[state.currentUser].budget;
+            }
+
+            function updateCategoryLists() {
+                const categories = state.users[state.currentUser].categories;
+                
+                categorySelect.innerHTML = '';
+                categoryToDeleteSelect.innerHTML = `<option value="">${translations[languageSelector.value].selectCategoryPlaceholder}</option>`;
+                categoryListDisplay.innerHTML = '';
+
+                Object.keys(categories).forEach(type => {
+                    categories[type].forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat;
+                        option.textContent = cat;
+                        categorySelect.appendChild(option);
+                        
+                        if (type === 'expense') {
+                           const deleteOption = document.createElement('option');
+                            deleteOption.value = cat;
+                            deleteOption.textContent = cat;
+                            categoryToDeleteSelect.appendChild(deleteOption);
+                        }
+
+                        const tag = document.createElement('span');
+                        tag.className = 'category-tag';
+                        tag.textContent = `${cat} (${type === 'income' ? 'Ingreso' : 'Gasto'})`;
+                        categoryListDisplay.appendChild(tag);
+                    });
+                });
+            }
+
+            loginBtn.addEventListener('click', () => {
+                const licenseKey = licenseKeyInput.value.toUpperCase();
+                if (VALID_ACCESS_CODES.includes(licenseKey)) {
+                    authScreen.classList.add('hidden');
+                    mainApp.style.display = 'block';
+                    loadState();
+                    updateUI();
+                } else {
+                    accessDeniedAlert.classList.remove('hidden');
+                    setTimeout(() => {
+                        accessDeniedAlert.classList.add('hidden');
+                    }, 3000);
+                }
             });
-        }
+
+            languageSelectorAuth.addEventListener('change', (e) => {
+                updateLanguage(e.target.value);
+            });
+            
+            languageSelector.addEventListener('change', (e) => {
+                updateLanguage(e.target.value);
+            });
+
+            navTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    navTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    tabContents.forEach(c => c.classList.add('hidden'));
+                    document.getElementById(tab.dataset.tab).classList.remove('hidden');
+                    calculateDashboard();
+                    renderTransactions();
+                    renderExpenseChart();
+                });
+            });
+
+            userSelector.addEventListener('change', (e) => {
+                state.currentUser = e.target.value;
+                updateUI();
+            });
+
+            window.updateUserName = (user) => {
+                const newName = user === 'user1' ? configUser1NameInput.value.trim() : configUser2NameInput.value.trim();
+                if (newName) {
+                    state.users[user].name = newName;
+                    updateUI();
+                    alert(translations[languageSelector.value].dashboardUser + ' ' + newName + ' actualizado.');
+                }
+            };
+
+            updateBudgetBtn.addEventListener('click', () => {
+                const newBudget = parseFloat(monthlyBudgetInput.value);
+                if (!isNaN(newBudget) && newBudget >= 0) {
+                    state.users[state.currentUser].budget = newBudget;
+                    updateBudgetDisplay();
+                    calculateDashboard();
+                    saveState();
+                    alert('Presupuesto actualizado a $' + newBudget.toLocaleString());
+                } else {
+                    alert('Por favor, ingrese un número válido.');
+                }
+            });
+
+            transactionTypeSelect.addEventListener('change', () => {
+                updateCategoryLists();
+            });
+
+            addTransactionBtn.addEventListener('click', () => {
+                const type = transactionTypeSelect.value;
+                const category = categorySelect.value;
+                const amount = parseFloat(amountInput.value);
+                const description = descriptionInput.value.trim();
+                const date = transactionDateInput.value;
+
+                if (category && amount > 0 && description && date) {
+                    const transaction = {
+                        id: Date.now(),
+                        type,
+                        category,
+                        amount,
+                        description,
+                        date
+                    };
+                    state.users[state.currentUser].transactions.push(transaction);
+                    amountInput.value = '';
+                    descriptionInput.value = '';
+                    transactionDateInput.value = '';
+                    updateUI();
+                    saveState();
+                } else {
+                    alert('Por favor, complete todos los campos.');
+                }
+            });
+
+            manageTransactionsBtn.addEventListener('click', () => {
+                allTransactionsList.innerHTML = '';
+                const transactions = state.users[state.currentUser].transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                if (transactions.length === 0) {
+                    allTransactionsList.innerHTML = `<p style="text-align: center; color: #666; padding: 40px;">${translations[languageSelector.value].noTransactionsModal}</p>`;
+                } else {
+                    const table = document.createElement('table');
+                    table.className = 'table';
+                    table.innerHTML = `
+                        <thead>
+                            <tr>
+                                <th data-lang="es">Fecha</th>
+                                <th data-lang="es">Descripción</th>
+                                <th data-lang="es">Monto</th>
+                                <th data-lang="es">Acción</th>
+                                <th class="hidden" data-lang="en">Date</th>
+                                <th class="hidden" data-lang="en">Description</th>
+                                <th class="hidden" data-lang="en">Amount</th>
+                                <th class="hidden" data-lang="en">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    `;
+                    const tbody = table.querySelector('tbody');
+                    transactions.forEach(t => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${t.date}</td>
+                            <td>${t.description}</td>
+                            <td class="${t.type}">$${t.amount.toFixed(2)}</td>
+                            <td><button class="btn btn-danger btn-sm" onclick="deleteTransaction(${t.id})" data-lang="es">Eliminar</button>
+                                <button class="btn btn-danger btn-sm hidden" onclick="deleteTransaction(${t.id})" data-lang="en">Delete</button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    allTransactionsList.appendChild(table);
+                }
+                transactionModal.style.display = 'block';
+                updateLanguage(languageSelector.value);
+            });
+
+            closeModalBtn.addEventListener('click', () => {
+                transactionModal.style.display = 'none';
+                updateUI();
+            });
+
+            window.onclick = (event) => {
+                if (event.target === transactionModal) {
+                    transactionModal.style.display = 'none';
+                    updateUI();
+                }
+            };
+            
+            window.deleteTransaction = (id) => {
+                if (confirm(translations[languageSelector.value].deleteConfirmation)) {
+                    state.users[state.currentUser].transactions = state.users[state.currentUser].transactions.filter(t => t.id !== id);
+                    saveState();
+                    manageTransactionsBtn.click();
+                }
+            };
+
+            addCategoryBtn.addEventListener('click', () => {
+                const newCategoryName = newCategoryInput.value.trim();
+                const newCategoryType = newCategoryTypeSelect.value;
+                if (newCategoryName && !state.users[state.currentUser].categories[newCategoryType].includes(newCategoryName)) {
+                    state.users[state.currentUser].categories[newCategoryType].push(newCategoryName);
+                    newCategoryInput.value = '';
+                    updateCategoryLists();
+                    saveState();
+                } else {
+                    alert('La categoría ya existe o el nombre no es válido.');
+                }
+            });
+
+            deleteCategoryBtn.addEventListener('click', () => {
+                const categoryToDelete = categoryToDeleteSelect.value;
+                if (categoryToDelete) {
+                    state.users[state.currentUser].categories.expense = state.users[state.currentUser].categories.expense.filter(cat => cat !== categoryToDelete);
+                    updateCategoryLists();
+                    saveState();
+                } else {
+                    alert('Seleccione una categoría para eliminar.');
+                }
+            });
+
+            window.setQuickPeriod = (period) => {
+                const now = new Date();
+                let start = new Date();
+                let end = new Date();
+
+                if (period === 'today') {
+                    // No hay cambios, start y end ya son hoy
+                } else if (period === 'week') {
+                    start.setDate(now.getDate() - now.getDay());
+                } else if (period === 'month') {
+                    start.setDate(1);
+                } else if (period === 'year') {
+                    start.setMonth(0);
+                    start.setDate(1);
+                }
+
+                startDateInput.value = start.toISOString().split('T')[0];
+                endDateInput.value = end.toISOString().split('T')[0];
+            };
+
+            generateReportBtn.addEventListener('click', () => {
+                const startDate = startDateInput.value;
+                const endDate = endDateInput.value;
+                
+                if (startDate && endDate) {
+                    const start = new Date(startDate);
+                    const end = new Date(endDate);
+                    
+                    const filteredTransactions = state.users[state.currentUser].transactions.filter(t => {
+                        const tDate = new Date(t.date);
+                        return tDate >= start && tDate <= end;
+                    });
+                    renderReport(filteredTransactions);
+                } else {
+                    alert('Por favor, seleccione una fecha de inicio y una fecha de fin.');
+                }
+            });
+
+            loadState();
+        });
     </script>
 </body>
 </html>
