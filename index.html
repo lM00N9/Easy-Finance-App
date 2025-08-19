@@ -844,7 +844,8 @@
         let currentLang = 'es';
         let categoryChartInstance = null;
         let categoryToDeleteInfo = null;
-        const systemPassword = "mysecretpassword"; // Puedes cambiar este password
+        // El código de acceso ahora es fijo como solicitaste
+        const systemPassword = "EasyFinance"; 
         let machineId = null;
 
         // Initialization when the DOM loads
@@ -957,21 +958,19 @@
             }
             
             if (licenseKey === systemPassword) {
+                // Modificación: La lógica de la huella digital se mantiene, pero ahora el sistema siempre dirá que es correcto
                 const storedMachineId = localStorage.getItem('easyfinance_machine_id');
                 
                 if (!storedMachineId) {
                     localStorage.setItem('easyfinance_machine_id', machineId);
-                    document.getElementById('authScreen').style.display = 'none';
-                    document.getElementById('mainApp').style.display = 'block';
-                } else if (storedMachineId === machineId) {
-                    document.getElementById('authScreen').style.display = 'none';
-                    document.getElementById('mainApp').style.display = 'block';
-                } else {
-                    document.getElementById('accessDenied').style.display = 'block';
-                    setTimeout(() => {
-                        document.getElementById('accessDenied').style.display = 'none';
-                    }, 5000);
+                } else if (storedMachineId !== machineId) {
+                    // Si el código de equipo no coincide, lo actualiza para que siempre pase la validación
+                    localStorage.setItem('easyfinance_machine_id', machineId);
                 }
+                
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+
             } else {
                 alert(translations[currentLang]['Incorrect access code']);
             }
