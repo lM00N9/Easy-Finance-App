@@ -838,7 +838,7 @@
                 'Por favor, seleccione una categoría para eliminar.': 'Please select a category to delete.',
                 '¿Estás seguro de que quieres eliminar la categoría "${categoryName}"?': `Are you sure you want to delete the category "${categoryName}"?`,
                 'Por favor, selecciona una nueva categoría.': 'Please select a new category.',
-                'Categoría eliminada y transacciones reasignadas.': 'Category deleted and transactions reassigned.',
+                'Categoría eliminada y transacciones reasignadas.': 'Category deleted and transactions re-assigned.',
             }
         };
 
@@ -1263,7 +1263,7 @@
             const end = new Date(endDate);
             
             if (start > end) {
-                reportContent.innerHTML = `<p style="color: red;">${getTranslation('La fecha de inicio no puede ser posterior a la fecha de fin.')}</p>`;
+                reportContent.innerHTML = `<p style="color: red;">${getTranslation('La fecha de inicio no puede ser posterior a la fecha de fin.')} </p>`;
                 return;
             }
 
