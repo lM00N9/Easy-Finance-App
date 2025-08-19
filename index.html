@@ -345,14 +345,6 @@
                 <option value="en">English</option>
             </select>
             <button class="btn" id="loginBtn">Acceder al Sistema</button>
-            <div id="accessDenied" class="access-denied" style="display: none;">
-                <h3 data-lang="es">🚫 Acceso Denegado</h3>
-                <h3 data-lang="en" class="hidden">🚫 Access Denied</h3>
-                <p data-lang="es">Este sistema solo funciona en el equipo autorizado.</p>
-                <p data-lang="en" class="hidden">This system only works on the authorized device.</p>
-                <p data-lang="es">Código de equipo no reconocido.</p>
-                <p data-lang="en" class="hidden">Device code not recognized.</p>
-            </div>
         </div>
 
         <div id="mainApp" class="app-container">
@@ -642,8 +634,8 @@
 
                         <h4 data-lang="es">6. Seguridad del Sistema</h4>
                         <h4 data-lang="en" class="hidden">6. System Security</h4>
-                        <p data-lang="es">EasyFinance está protegido con código de acceso y vinculado al equipo donde fue instalado para garantizar el uso autorizado únicamente.</p>
-                        <p data-lang="en" class="hidden">EasyFinance is protected with an access code and linked to the device where it was installed to ensure authorized use only.</p>
+                        <p data-lang="es">EasyFinance está protegido con código de acceso.</p>
+                        <p data-lang="en" class="hidden">EasyFinance is protected with an access code.</p>
                     </div>
                 </div>
             </div>
@@ -681,30 +673,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        // System for hardware protection
-        function generateMachineId() {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            ctx.textBaseline = 'top';
-            ctx.font = '14px Arial';
-            ctx.fillText('EasyFinance Hardware ID', 2, 2);
-            
-            const screen = `${screen.width}x${screen.height}`;
-            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            const platform = navigator.platform;
-            const hardwareId = canvas.toDataURL() + screen + timezone + platform;
-            
-            let hash = 0;
-            for (let i = 0; i < hardwareId.length; i++) {
-                const char = hardwareId.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash;
-            }
-            return Math.abs(hash).toString(16).toUpperCase();
-        }
-
         // System data
         let currentUser = 'user1';
+        let categoryToDeleteInfo = null;
+        const systemPassword = "EasyFinance";
+
         const userData = {
             user1: {
                 name: 'Usuario 1',
@@ -732,7 +705,101 @@
                     Salario: 'Salario', Freelance: 'Freelance', Bonos: 'Bonos', Inversiones: 'Inversiones',
                     Alimentación: 'Alimentación', Transporte: 'Transporte', Entretenimiento: 'Entretenimiento',
                     Servicios: 'Servicios', Salud: 'Salud', Educación: 'Educación'
-                }
+                },
+                '🔐 EasyFinance': '🔐 EasyFinance',
+                'Sistema de Gestión Financiera Personal': 'Sistema de Gestión Financiera Personal',
+                'Código de acceso / Access code': 'Código de acceso / Access code',
+                'Acceder al Sistema': 'Acceder al Sistema',
+                '💰 EasyFinance': '💰 EasyFinance',
+                '👤 Usuario:': '👤 Usuario:',
+                '📊 Dashboard - ': '📊 Dashboard - ',
+                '⚠️ Sobrepresupuesto - Los gastos del mes superan el presupuesto establecido': '⚠️ Sobrepresupuesto - Los gastos del mes superan el presupuesto establecido',
+                '💰 Ingresos del Mes': '💰 Ingresos del Mes',
+                '💸 Gastos del Mes': '💸 Gastos del Mes',
+                '💵 Balance': '💵 Balance',
+                '🎯 Presupuesto': '🎯 Presupuesto',
+                '📈 Distribución de Gastos': '📈 Distribución de Gastos',
+                'No hay gastos para mostrar en el gráfico de este mes.': 'No hay gastos para mostrar en el gráfico de este mes.',
+                '💳 Registro de Transacciones - ': '💳 Registro de Transacciones - ',
+                '➕ Nueva Transacción': '➕ Nueva Transacción',
+                'Tipo:': 'Tipo:',
+                'Ingreso': 'Ingreso',
+                'Gasto': 'Gasto',
+                'Categoría:': 'Categoría:',
+                'Monto:': 'Monto:',
+                'Descripción:': 'Descripción:',
+                'Fecha:': 'Fecha:',
+                'Agregar Transacción': 'Agregar Transacción',
+                '📋 Transacciones Recientes': '📋 Transacciones Recientes',
+                'No hay transacciones registradas': 'No hay transacciones registradas',
+                '🛠️ Administrar Transacciones': '🛠️ Administrar Transacciones',
+                '📈 Informes y Análisis - ': '📈 Informes y Análisis - ',
+                '📅 Seleccionar Período del Informe': '📅 Seleccionar Período del Informe',
+                'Fecha de inicio:': 'Fecha de inicio:',
+                'Fecha de fin:': 'Fecha de fin:',
+                'Generar Informe': 'Generar Informe',
+                'Hoy': 'Hoy',
+                'Esta Semana': 'Esta Semana',
+                'Este Mes': 'Este Mes',
+                'Este Año': 'Este Año',
+                'Seleccione las fechas de inicio y fin, luego genere el informe para ver los datos del período elegido': 'Seleccione las fechas de inicio y fin, luego genere el informe para ver los datos del período elegido',
+                'La fecha de inicio no puede ser posterior a la fecha de fin.': 'La fecha de inicio no puede ser posterior a la fecha de fin.',
+                'Total Ingresos': 'Total Ingresos',
+                'Total Gastos': 'Total Gastos',
+                'Balance del Período': 'Balance del Período',
+                'Resumen por Categoría': 'Resumen por Categoría',
+                'Categoría': 'Categoría',
+                'Ingresos': 'Ingresos',
+                'Gastos': 'Gastos',
+                'Balance': 'Balance',
+                '⚙️ Configuración - ': '⚙️ Configuración - ',
+                '👥 Nombres de Usuario': '👥 Nombres de Usuario',
+                'Nombre Usuario 1:': 'Nombre Usuario 1:',
+                'Actualizar Nombre': 'Actualizar Nombre',
+                'Nombre Usuario 2:': 'Nombre Usuario 2:',
+                '🎯 Presupuesto Mensual': '🎯 Presupuesto Mensual',
+                'Presupuesto:': 'Presupuesto:',
+                'Actualizar Presupuesto': 'Actualizar Presupuesto',
+                '🏷️ Categorías Personalizadas': '🏷️ Categorías Personalizadas',
+                'Categorías actuales:': 'Categorías actuales:',
+                'Agregar nueva categoría:': 'Agregar nueva categoría:',
+                'Tipo:': 'Tipo:',
+                'Eliminar categoría:': 'Eliminar categoría:',
+                'Seleccionar categoría...': 'Seleccionar categoría...',
+                '🗑️ Eliminar': '🗑️ Eliminar',
+                '📖 Manual de Instrucciones': '📖 Manual de Instrucciones',
+                '🚀 Cómo usar EasyFinance': '🚀 Cómo usar EasyFinance',
+                '1. Dashboard': '1. Dashboard',
+                '2. Registro de Transacciones': '2. Registro de Transacciones',
+                '3. Múltiples Usuarios': '3. Múltiples Usuarios',
+                '4. Informes Personalizables': '4. Informes Personalizables',
+                '5. Configuración': '5. Configuración',
+                '6. Seguridad del Sistema': '6. Seguridad del Sistema',
+                'EasyFinance está protegido con código de acceso.': 'EasyFinance está protegido con código de acceso.',
+                'No hay transacciones para administrar': 'No hay transacciones para administrar',
+                'Categorías Asociadas Encontradas': 'Categorías Asociadas Encontradas',
+                'Nueva Categoría:': 'Nueva Categoría:',
+                'Reasignar y Eliminar': 'Reasignar y Eliminar',
+                'Cancelar': 'Cancelar',
+                'El dashboard muestra un resumen de tu situación financiera actual con ingresos, gastos, balance y alertas de presupuesto para el mes en curso.': 'El dashboard muestra un resumen de tu situación financiera actual con ingresos, gastos, balance y alertas de presupuesto para el mes en curso.',
+                'Ve a la pestaña "Transacciones", selecciona el tipo (Ingreso o Gasto), elige una categoría, ingresa el monto y descripción, selecciona la fecha y haz clic en "Agregar Transacción".': 'Ve a la pestaña "Transacciones", selecciona el tipo (Ingreso o Gasto), elige una categoría, ingresa el monto y descripción, selecciona la fecha y haz clic en "Agregar Transacción".',
+                'El sistema permite 2 usuarios con datos completamente independientes. Puedes personalizar los nombres de los usuarios desde la configuración y cambiar entre ellos desde la barra superior.': 'El sistema permite 2 usuarios con datos completamente independientes. Puedes personalizar los nombres de los usuarios desde la configuración y cambiar entre ellos desde la barra superior.',
+                'Genera informes de cualquier período seleccionando fechas de inicio y fin. Usa los botones rápidos para períodos comunes (hoy, semana, mes, año) o define tu propio rango personalizado.': 'Genera informes de cualquier período seleccionando fechas de inicio y fin. Usa los botones rápidos para períodos comunes (hoy, semana, mes, año) o define tu propio rango personalizado.',
+                'Personaliza los nombres de usuario, ajusta tu presupuesto mensual y gestiona categorías personalizadas desde la sección de configuración.': 'Personaliza los nombres de usuario, ajusta tu presupuesto mensual y gestiona categorías personalizadas desde la sección de configuración.',
+                'Por favor ingrese el código de acceso': 'Por favor ingrese el código de acceso',
+                'Incorrect access code': 'Código de acceso incorrecto',
+                'Por favor, complete todos los campos de la transacción.': 'Por favor, complete todos los campos de la transacción.',
+                '¿Estás seguro de que quieres eliminar esta transacción?': '¿Estás seguro de que quieres eliminar esta transacción?',
+                'Nombre actualizado exitosamente': 'Nombre actualizado exitosamente',
+                'Por favor, ingrese un valor de presupuesto válido.': 'Por favor, ingrese un valor de presupuesto válido.',
+                'La categoría ya existe.': 'La categoría ya existe.',
+                'Ingrese la traducción al inglés para la categoría:': 'Ingrese la traducción al inglés para la categoría:',
+                'Categoría agregada exitosamente.': 'Categoría agregada exitosamente.',
+                'La categoría no se ha guardado.': 'La categoría no se ha guardado.',
+                'Por favor, seleccione una categoría para eliminar.': 'Por favor, seleccione una categoría para eliminar.',
+                '¿Estás seguro de que quieres eliminar la categoría "${categoryName}"?': (categoryName) => `¿Estás seguro de que quieres eliminar la categoría "${categoryName}"?`,
+                'Por favor, selecciona una nueva categoría.': 'Por favor, selecciona una nueva categoría.',
+                'Categoría eliminada y transacciones reasignadas.': 'Categoría eliminada y transacciones reasignadas.',
             },
             en: {
                 categories: {
@@ -740,14 +807,10 @@
                     Alimentación: 'Food', Transporte: 'Transport', Entretenimiento: 'Entertainment',
                     Servicios: 'Utilities', Salud: 'Health', Educación: 'Education'
                 },
-                // Add translations for text content
                 '🔐 EasyFinance': '🔐 EasyFinance',
                 'Sistema de Gestión Financiera Personal': 'Personal Financial Management System',
                 'Código de acceso / Access code': 'Access code',
                 'Acceder al Sistema': 'Access System',
-                '🚫 Acceso Denegado': '🚫 Access Denied',
-                'Este sistema solo funciona en el equipo autorizado.': 'This system only works on the authorized device.',
-                'Código de equipo no reconocido.': 'Device code not recognized.',
                 '💰 EasyFinance': '💰 EasyFinance',
                 '👤 Usuario:': '👤 User:',
                 '📊 Dashboard - ': '📊 Dashboard - ',
@@ -813,6 +876,7 @@
                 '4. Informes Personalizables': '4. Customizable Reports',
                 '5. Configuración': '5. Settings',
                 '6. Seguridad del Sistema': '6. System Security',
+                'EasyFinance está protegido con código de acceso.': 'EasyFinance is protected with an access code.',
                 'No hay transacciones para administrar': 'No transactions to manage',
                 'Categorías Asociadas Encontradas': 'Associated Categories Found',
                 'Nueva Categoría:': 'New Category:',
@@ -823,7 +887,6 @@
                 'El sistema permite 2 usuarios con datos completamente independientes. Puedes personalizar los nombres de los usuarios desde la configuración y cambiar entre ellos desde la barra superior.': 'The system allows for 2 users with completely independent data. You can customize user names from the settings and switch between them from the top bar.',
                 'Genera informes de cualquier período seleccionando fechas de inicio y fin. Usa los botones rápidos para períodos comunes (hoy, semana, mes, año) o define tu propio rango personalizado.': 'Generate reports for any period by selecting start and end dates. Use the quick buttons for common periods (today, week, month, year) or define your own custom range.',
                 'Personaliza los nombres de usuario, ajusta tu presupuesto mensual y gestiona categorías personalizadas desde la sección de configuración.': 'Customize user names, adjust your monthly budget, and manage custom categories from the settings section.',
-                'EasyFinance está protegido con código de acceso y vinculado al equipo donde fue instalado para garantizar el uso autorizado únicamente.': 'EasyFinance is protected with an access code and linked to the device where it was installed to ensure authorized use only.',
                 'Por favor ingrese el código de acceso': 'Please enter the access code',
                 'Incorrect access code': 'Incorrect access code',
                 'Por favor, complete todos los campos de la transacción.': 'Please fill in all transaction fields.',
@@ -835,7 +898,7 @@
                 'Categoría agregada exitosamente.': 'Category added successfully.',
                 'La categoría no se ha guardado.': 'Category not saved.',
                 'Por favor, seleccione una categoría para eliminar.': 'Please select a category to delete.',
-                '¿Estás seguro de que quieres eliminar la categoría "${categoryName}"?': `Are you sure you want to delete the category "${categoryName}"?`,
+                '¿Estás seguro de que quieres eliminar la categoría "${categoryName}"?': (categoryName) => `Are you sure you want to delete the category "${categoryName}"?`,
                 'Por favor, selecciona una nueva categoría.': 'Please select a new category.',
                 'Categoría eliminada y transacciones reasignadas.': 'Category deleted and transactions re-assigned.',
             }
@@ -843,14 +906,9 @@
 
         let currentLang = 'es';
         let categoryChartInstance = null;
-        let categoryToDeleteInfo = null;
-        // El código de acceso ahora es fijo como solicitaste
-        const systemPassword = "EasyFinance"; 
-        let machineId = null;
-
+        
         // Initialization when the DOM loads
         document.addEventListener('DOMContentLoaded', function() {
-            machineId = generateMachineId();
             initializeEventListeners();
             loadLanguagePreference();
             loadData();
@@ -905,6 +963,12 @@
             document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
             document.getElementById('deleteCategoryBtn').addEventListener('click', deleteCategory);
 
+            // Quick period buttons
+            document.querySelectorAll('[onclick^="setQuickPeriod"]').forEach(btn => {
+                const period = btn.getAttribute('onclick').match(/'(.*?)'/)[1];
+                btn.addEventListener('click', () => setQuickPeriod(period));
+            });
+
 
             // Modal
             document.getElementById('closeModal').addEventListener('click', closeTransactionModal);
@@ -953,26 +1017,15 @@
             const licenseKey = document.getElementById('licenseKey').value.trim();
             
             if (!licenseKey) {
-                alert(translations[currentLang]['Por favor ingrese el código de acceso']);
+                alert(getTranslation('Por favor ingrese el código de acceso'));
                 return;
             }
             
             if (licenseKey === systemPassword) {
-                // Modificación: La lógica de la huella digital se mantiene, pero ahora el sistema siempre dirá que es correcto
-                const storedMachineId = localStorage.getItem('easyfinance_machine_id');
-                
-                if (!storedMachineId) {
-                    localStorage.setItem('easyfinance_machine_id', machineId);
-                } else if (storedMachineId !== machineId) {
-                    // Si el código de equipo no coincide, lo actualiza para que siempre pase la validación
-                    localStorage.setItem('easyfinance_machine_id', machineId);
-                }
-                
                 document.getElementById('authScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
-
             } else {
-                alert(translations[currentLang]['Incorrect access code']);
+                alert(getTranslation('Incorrect access code'));
             }
         }
 
@@ -987,7 +1040,6 @@
                 }
             });
 
-            // Translate dynamic text
             document.querySelectorAll('[data-translatable]').forEach(el => {
                 const originalText = el.getAttribute('data-translatable');
                 el.textContent = translations[currentLang][originalText] || originalText;
@@ -999,12 +1051,13 @@
             updateUserDisplayNames();
         }
         
-        // This function will handle all translations based on the new structure
         function getTranslation(key) {
+            if (typeof translations[currentLang][key] === 'function') {
+                return translations[currentLang][key];
+            }
             return translations[currentLang][key] || key;
         }
 
-        // Modified functions to use getTranslation
         function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
             document.getElementById(tabName).classList.remove('hidden');
@@ -1180,7 +1233,7 @@
                 row.innerHTML = `
                     <td>${t.date}</td>
                     <td>${t.description}</td>
-                    <td>${getTranslation(t.category)}</td>
+                    <td>${getTranslation('categories')[t.category] || t.category}</td>
                     <td class="${t.type}">${t.type === 'expense' ? '-' : '+'}$${t.amount.toFixed(2)}</td>
                 `;
                 tbody.appendChild(row);
@@ -1220,7 +1273,7 @@
                     row.innerHTML = `
                         <td>${t.date}</td>
                         <td>${t.description}</td>
-                        <td>${getTranslation(t.category)}</td>
+                        <td>${getTranslation('categories')[t.category] || t.category}</td>
                         <td class="${t.type}">${t.type === 'expense' ? '-' : '+'}$${t.amount.toFixed(2)}</td>
                         <td><button class="btn btn-danger" onclick="deleteTransaction(${t.id})">${getTranslation('Eliminar')}</button></td>
                     `;
@@ -1320,7 +1373,7 @@
                 const expense = categorySummary[category].expense;
                 summaryHTML += `
                     <tr>
-                        <td>${getTranslation(category)}</td>
+                        <td>${getTranslation('categories')[category] || category}</td>
                         <td class="income">$${income.toFixed(2)}</td>
                         <td class="expense">$${expense.toFixed(2)}</td>
                         <td>$${(income - expense).toFixed(2)}</td>
@@ -1389,7 +1442,7 @@
             categories.forEach(cat => {
                 const option = document.createElement('option');
                 option.value = cat;
-                option.textContent = getTranslation(cat);
+                option.textContent = getTranslation('categories')[cat] || cat;
                 categorySelect.appendChild(option);
             });
         }
@@ -1397,7 +1450,7 @@
         function updateCategoryDisplay() {
             const categoryListDisplay = document.getElementById('categoryListDisplay');
             const allCategories = [...getCurrentCategories().income, ...getCurrentCategories().expense];
-            categoryListDisplay.innerHTML = allCategories.map(cat => `<span class="category-tag">${getTranslation(cat)}</span>`).join('');
+            categoryListDisplay.innerHTML = allCategories.map(cat => `<span class="category-tag">${getTranslation('categories')[cat] || cat}</span>`).join('');
         }
         
         function updateDeleteCategorySelector() {
@@ -1408,7 +1461,7 @@
             allCategories.forEach(cat => {
                 const option = document.createElement('option');
                 option.value = cat;
-                option.textContent = getTranslation(cat);
+                option.textContent = getTranslation('categories')[cat] || cat;
                 categoryToDeleteSelect.appendChild(option);
             });
         }
@@ -1457,7 +1510,7 @@
             if (associatedTransactions.length > 0) {
                 categoryToDeleteInfo = { name: categoryName, type: associatedTransactions[0].type };
                 document.getElementById('oldCategoryName').textContent = categoryName;
-                document.getElementById('oldCategoryNameEn').textContent = getTranslation(categoryName);
+                document.getElementById('oldCategoryNameEn').textContent = getTranslation('categories')[categoryName] || categoryName;
                 
                 const reassignSelect = document.getElementById('reassignCategorySelect');
                 reassignSelect.innerHTML = '';
@@ -1465,13 +1518,14 @@
                 allCategories.filter(cat => cat !== categoryName).forEach(cat => {
                     const option = document.createElement('option');
                     option.value = cat;
-                    option.textContent = getTranslation(cat);
+                    option.textContent = getTranslation('categories')[cat] || cat;
                     reassignSelect.appendChild(option);
                 });
 
                 document.getElementById('reassignModal').style.display = 'block';
             } else {
-                if (confirm(getTranslation('¿Estás seguro de que quieres eliminar la categoría "${categoryName}"?').replace('${categoryName}', categoryName))) {
+                const confirmMsg = getTranslation('¿Estás seguro de que quieres eliminar la categoría "${categoryName}"?')(categoryName);
+                if (confirm(confirmMsg)) {
                     performDelete(categoryName);
                 }
             }
@@ -1520,7 +1574,7 @@
                 }
             });
 
-            const labels = Object.keys(expensesByCategory).map(cat => getTranslation(cat));
+            const labels = Object.keys(expensesByCategory).map(cat => getTranslation('categories')[cat] || cat);
             const data = Object.values(expensesByCategory);
 
             const colors = [
