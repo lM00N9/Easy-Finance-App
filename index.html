@@ -1169,8 +1169,6 @@
 
                 categoryEl.innerHTML = '';
                 categoryToDeleteEl.innerHTML = `<option value="" data-lang="es">Seleccionar categoría...</option><option value="" data-lang="en" class="hidden">Select category...</option>`;
-                categoryEl.options[0].textContent = locales[currentLang].transactions.categoryPlaceholder;
-                categoryToDeleteEl.options[0].textContent = locales[currentLang].settings.selectCategory;
 
                 const transactionType = transactionTypeEl.value;
                 const relevantCats = transactionType === 'income' ? incomeCats : expenseCats;
@@ -1216,30 +1214,27 @@
                 loadCurrentUserInfo();
             }
 
-            function handleLogin() {
+            async function handleLogin() {
                 const licenseKey = licenseKeyInput.value;
-                fetch('codes.txt')
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.text();
-                    })
-                    .then(data => {
-                        const validCodes = data.split('\n').map(code => code.trim());
-                        if (validCodes.includes(licenseKey)) {
-                            authScreen.style.display = 'none';
-                            mainApp.style.display = 'block';
-                            loadAndRender();
-                            updateLang();
-                        } else {
-                            alert("Acceso Denegado. Código incorrecto.");
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error de conexión:', error);
-                        alert("Error de conexión. Por favor, intenta de nuevo.");
-                    });
+                try {
+                    const response = await fetch('./codes.txt');
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    const data = await response.text();
+                    const validCodes = data.split('\n').map(code => code.trim());
+                    if (validCodes.includes(licenseKey)) {
+                        authScreen.style.display = 'none';
+                        mainApp.style.display = 'block';
+                        loadAndRender();
+                        updateLang();
+                    } else {
+                        alert("Acceso Denegado. Código incorrecto.");
+                    }
+                } catch (error) {
+                    console.error('Error de conexión:', error);
+                    alert("Error de conexión. Por favor, intenta de nuevo.");
+                }
             }
 
             loginBtn.addEventListener('click', handleLogin);
@@ -1311,25 +1306,25 @@
             });
 
             addCategoryBtn.addEventListener('click', () => {
-                const categoryName = newCategoryInput.value.trim();
-                const categoryType = newCategoryTypeEl.value;
+                const newCategoryName = newCategoryInput.value.trim();
+                const newCategoryType = newCategoryTypeEl.value;
 
-                if (!categoryName) {
+                if (!newCategoryName) {
                     alert("El nombre de la categoría no puede estar vacío.");
                     return;
                 }
 
                 const user = users[currentUser];
-                const existingCategory = user.categories[categoryType].find(c => c.es.toLowerCase() === categoryName.toLowerCase() || c.en.toLowerCase() === categoryName.toLowerCase());
+                const existingCategory = user.categories[newCategoryType].find(c => c.es.toLowerCase() === newCategoryName.toLowerCase() || c.en.toLowerCase() === newCategoryName.toLowerCase());
 
                 if (existingCategory) {
                     alert("Esa categoría ya existe.");
                     return;
                 }
 
-                user.categories[categoryType].push({
-                    es: categoryName,
-                    en: categoryName
+                user.categories[newCategoryType].push({
+                    es: newCategoryName,
+                    en: newCategoryName
                 });
                 saveState();
                 updateCategorySelects();
@@ -1376,7 +1371,7 @@
             });
 
             function updateUserName(userKey) {
-                const nameInput = document.getElementById(`config${userKey.toUpperCase()}Name`);
+                const nameInput = document.getElementById(`config${userKey === 'user1' ? 'User1' : 'User2'}Name`);
                 const newName = nameInput.value.trim();
                 if (newName) {
                     users[userKey].name = newName;
