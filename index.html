@@ -675,7 +675,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        // System data
+        // System data management. localStorage is used for persistence.
         let currentUser = 'user1';
         let categoryToDeleteInfo = null;
 
@@ -911,27 +911,6 @@
         let categoryToDeleteInfo = null;
         
         // System data management. localStorage is used for persistence.
-        const userData = {
-            user1: {
-                name: 'Usuario 1',
-                transactions: [],
-                categories: {
-                    income: ['Salario', 'Freelance', 'Bonos', 'Inversiones'],
-                    expense: ['Alimentación', 'Transporte', 'Entretenimiento', 'Servicios', 'Salud', 'Educación']
-                },
-                monthlyBudget: 3000
-            },
-            user2: {
-                name: 'Usuario 2', 
-                transactions: [],
-                categories: {
-                    income: ['Salario', 'Freelance', 'Bonos', 'Inversiones'],
-                    expense: ['Alimentación', 'Transporte', 'Entretenimiento', 'Servicios', 'Salud', 'Educación']
-                },
-                monthlyBudget: 3000
-            }
-        };
-
         function saveData() {
             localStorage.setItem('easyfinance_data', JSON.stringify(userData));
         }
@@ -1608,6 +1587,8 @@
             updateDashboard();
             alert(getTranslation('Categoría eliminada y transacciones reasignadas.'));
         }
+
+        let categoryChartInstance = null;
 
         function renderCategoryChart() {
             const ctx = document.getElementById('categoryChart').getContext('2d');
