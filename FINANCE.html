@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyFinance - Financial Management System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .auth-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 400px;
+            margin: 100px auto;
+            text-align: center;
+        }
+        
+        .app-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: none;
+        }
+        
+        .nav-bar {
+            background: #2c3e50;
+            padding: 15px 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-tab {
+            padding: 10px 20px;
+            background: #34495e;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .nav-tab.active {
+            background: #3498db;
+        }
+        
+        .nav-tab:hover {
+            background: #4a6741;
+        }
+        
+        .content {
+            padding: 30px;
+            min-height: 600px;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .kpi-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .kpi-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .alert {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .btn {
+            background: #3498db;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+        }
+        
+        .btn-success:hover {
+            background: #229954;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .table th, .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        .chart-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            min-height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .chart-canvas {
+            max-width: 500px;
+            height: auto;
+            margin-top: 20px;
+        }
+        
+        .instructions {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            line-height: 1.6;
+        }
+        
+        .config-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .category-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .category-tag {
+            background: #3498db;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .income { color: #27ae60; }
+        .expense { color: #e74c3c; }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            padding-top: 50px;
+            overflow: auto;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: black;
+        }
+
+        .date-range-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .user-name-edit {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            width: 120px;
+        }
+
+        .access-denied {
+            background: #e74c3c;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .nav-bar {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .nav-tabs {
+                justify-content: center;
+            }
+            
+            .nav-tab {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            div[style*="grid-template-columns: 1fr 1fr"] {
+                display: block !important;
+            }
+            
+            div[style*="grid-template-columns: 1fr 1fr"] > div {
+                margin-bottom: 20px;
+            }
+
+            .date-range-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="authScreen" class="auth-container">
+            <h2 data-lang="es">🔐 EasyFinance</h2>
+            <h2 data-lang="en" class="hidden">🔐 EasyFinance</h2>
+            <p style="margin: 20px 0; color: #666;" data-lang="es">Sistema de Gestión Financiera Personal</p>
+            <p style="margin: 20px 0; color: #666;" data-lang="en" class="hidden">Personal Financial Management System</p>
+            <div class="form-group">
+                <input type="password" id="licenseKey" placeholder="Código de acceso / Access code" style="text-align: center; font-weight: bold;">
+            </div>
+            <select id="languageSelectorAuth" style="width: 100%; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                <option value="es">Español</option>
+                <option value="en">English</option>
+            </select>
+            <button class="btn" id="loginBtn">Acceder al Sistema</button>
+            <div id="accessDenied" class="access-denied" style="display: none;">
+                <h3 data-lang="es">🚫 Acceso Denegado</h3>
+                <h3 data-lang="en" class="hidden">🚫 Access Denied</h3>
+                <p data-lang="es">Este sistema solo funciona en el equipo autorizado.</p>
+                <p data-lang="en" class="hidden">This system only works on the authorized device.</p>
+                <p data-lang="es">Código de equipo no reconocido.</p>
+                <p data-lang="en" class="hidden">Device code not recognized.</p>
+            </div>
+        </div>
+
+        <div id="mainApp" class="app-container">
+            <div class="nav-bar">
+                <h2 data-lang="es">💰 EasyFinance</h2>
+                <h2 data-lang="en" class="hidden">💰 EasyFinance</h2>
+                <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 10px; color: white;">
+                        <span data-lang="es">👤 Usuario:</span>
+                        <span data-lang="en" class="hidden">👤 User:</span>
+                        <input type="text" id="user1Name" class="user-name-edit" value="Usuario 1">
+                        <span style="color: white;">/</span>
+                        <input type="text" id="user2Name" class="user-name-edit" value="Usuario 2">
+                        <select id="userSelector" style="padding: 5px; border-radius: 3px; margin-left: 10px;">
+                            <option value="user1">Usuario 1</option>
+                            <option value="user2">Usuario 2</option>
+                        </select>
+                        <select id="languageSelector" style="padding: 5px; border-radius: 3px; background: #34495e; color: white; border: none;">
+                            <option value="es">Español</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                    <div class="nav-tabs">
+                        <button class="nav-tab active" data-tab="dashboard" data-lang="es">Dashboard</button>
+                        <button class="nav-tab active hidden" data-tab="dashboard" data-lang="en">Dashboard</button>
+                        <button class="nav-tab" data-tab="transactions" data-lang="es">Transacciones</button>
+                        <button class="nav-tab hidden" data-tab="transactions" data-lang="en">Transactions</button>
+                        <button class="nav-tab" data-tab="reports" data-lang="es">Informes</button>
+                        <button class="nav-tab hidden" data-tab="reports" data-lang="en">Reports</button>
+                        <button class="nav-tab" data-tab="config" data-lang="es">Configuración</button>
+                        <button class="nav-tab hidden" data-tab="config" data-lang="en">Settings</button>
+                        <button class="nav-tab" data-tab="instructions" data-lang="es">Manual</button>
+                        <button class="nav-tab hidden" data-tab="instructions" data-lang="en">Manual</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content">
+                <div id="dashboard" class="tab-content">
+                    <h2 data-lang="es">📊 Dashboard - <span id="currentUserDisplay">Usuario 1</span></h2>
+                    <h2 data-lang="en" class="hidden">📊 Dashboard - <span id="currentUserDisplayEn">User 1</span></h2>
+                    
+                    <div class="alert" id="budgetAlert">
+                        <span data-lang="es">⚠️ Sobrepresupuesto - Los gastos del mes superan el presupuesto establecido</span>
+                        <span data-lang="en" class="hidden">⚠️ Overbudget - Monthly expenses exceed the set budget</span>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="kpi-card">
+                            <h3 data-lang="es">💰 Ingresos del Mes</h3>
+                            <h3 data-lang="en" class="hidden">💰 Monthly Income</h3>
+                            <div class="kpi-value income" id="monthlyIncome">$0</div>
+                        </div>
+                        <div class="kpi-card">
+                            <h3 data-lang="es">💸 Gastos del Mes</h3>
+                            <h3 data-lang="en" class="hidden">💸 Monthly Expenses</h3>
+                            <div class="kpi-value expense" id="monthlyExpenses">$0</div>
+                        </div>
+                        <div class="kpi-card">
+                            <h3 data-lang="es">💵 Balance</h3>
+                            <h3 data-lang="en" class="hidden">💵 Balance</h3>
+                            <div class="kpi-value" id="balance">$0</div>
+                        </div>
+                        <div class="kpi-card">
+                            <h3 data-lang="es">🎯 Presupuesto</h3>
+                            <h3 data-lang="en" class="hidden">🎯 Budget</h3>
+                            <div class="kpi-value" id="budget">$3,000</div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3 data-lang="es">📈 Distribución de Gastos</h3>
+                        <h3 data-lang="en" class="hidden">📈 Expense Distribution</h3>
+                        <canvas id="categoryChart" class="chart-canvas"></canvas>
+                        <p id="noChartData" style="display: none; text-align: center; color: #666; padding: 40px;"></p>
+                    </div>
+                </div>
+
+                <div id="transactions" class="tab-content hidden">
+                    <h2 data-lang="es">💳 Registro de Transacciones - <span id="transactionsUserDisplay">Usuario 1</span></h2>
+                    <h2 data-lang="en" class="hidden">💳 Transaction Log - <span id="transactionsUserDisplayEn">User 1</span></h2>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <div>
+                            <h3 data-lang="es">➕ Nueva Transacción</h3>
+                            <h3 data-lang="en" class="hidden">➕ New Transaction</h3>
+                            <div class="form-group">
+                                <label data-lang="es">Tipo:</label>
+                                <label data-lang="en" class="hidden">Type:</label>
+                                <select id="transactionType">
+                                    <option value="income" data-lang="es">Ingreso</option>
+                                    <option value="income" data-lang="en" class="hidden">Income</option>
+                                    <option value="expense" data-lang="es">Gasto</option>
+                                    <option value="expense" data-lang="en" class="hidden">Expense</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label data-lang="es">Categoría:</label>
+                                <label data-lang="en" class="hidden">Category:</label>
+                                <select id="category">
+                                    <option value="Salario" data-lang="es">Salario</option>
+                                    <option value="Salary" data-lang="en" class="hidden">Salary</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label data-lang="es">Monto:</label>
+                                <label data-lang="en" class="hidden">Amount:</label>
+                                <input type="number" id="amount" step="0.01" placeholder="0.00" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label data-lang="es">Descripción:</label>
+                                <label data-lang="en" class="hidden">Description:</label>
+                                <input type="text" id="description" placeholder="Descripción de la transacción / Transaction description" maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label data-lang="es">Fecha:</label>
+                                <label data-lang="en" class="hidden">Date:</label>
+                                <input type="date" id="transactionDate">
+                            </div>
+                            <button class="btn btn-success" id="addTransactionBtn" data-lang="es">Agregar Transacción</button>
+                            <button class="btn btn-success hidden" id="addTransactionBtnEn" data-lang="en">Add Transaction</button>
+                        </div>
+                        
+                        <div>
+                            <h3 data-lang="es">📋 Transacciones Recientes</h3>
+                            <h3 data-lang="en" class="hidden">📋 Recent Transactions</h3>
+                            <div id="transactionsList" style="max-height: 400px; overflow-y: auto;">
+                                <p style="text-align: center; color: #666; padding: 40px;" data-lang="es">No hay transacciones registradas</p>
+                                <p style="text-align: center; color: #666; padding: 40px;" data-lang="en" class="hidden">No transactions registered</p>
+                            </div>
+                            <button class="btn" id="manageTransactionsBtn" style="margin-top: 15px;" data-lang="es">🛠️ Administrar Transacciones</button>
+                            <button class="btn hidden" id="manageTransactionsBtnEn" style="margin-top: 15px;" data-lang="en">🛠️ Manage Transactions</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="reports" class="tab-content hidden">
+                    <h2 data-lang="es">📈 Informes y Análisis - <span id="reportsUserDisplay">Usuario 1</span></h2>
+                    <h2 data-lang="en" class="hidden">📈 Reports & Analysis - <span id="reportsUserDisplayEn">User 1</span></h2>
+                    
+                    <div class="config-section">
+                        <h3 data-lang="es">📅 Seleccionar Período del Informe</h3>
+                        <h3 data-lang="en" class="hidden">📅 Select Report Period</h3>
+                        <div class="date-range-container">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label data-lang="es">Fecha de inicio:</label>
+                                <label data-lang="en" class="hidden">Start Date:</label>
+                                <input type="date" id="startDate">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label data-lang="es">Fecha de fin:</label>
+                                <label data-lang="en" class="hidden">End Date:</label>
+                                <input type="date" id="endDate">
+                            </div>
+                            <div>
+                                <button class="btn" id="generateReportBtn" data-lang="es">Generar Informe</button>
+                                <button class="btn hidden" id="generateReportBtnEn" data-lang="en">Generate Report</button>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <button class="btn" onclick="setQuickPeriod('today')" style="margin-right: 10px; background: #95a5a6;" data-lang="es">Hoy</button>
+                            <button class="btn hidden" onclick="setQuickPeriod('today')" style="margin-right: 10px; background: #95a5a6;" data-lang="en">Today</button>
+                            <button class="btn" onclick="setQuickPeriod('week')" style="margin-right: 10px; background: #95a5a6;" data-lang="es">Esta Semana</button>
+                            <button class="btn hidden" onclick="setQuickPeriod('week')" style="margin-right: 10px; background: #95a5a6;" data-lang="en">This Week</button>
+                            <button class="btn" onclick="setQuickPeriod('month')" style="margin-right: 10px; background: #95a5a6;" data-lang="es">Este Mes</button>
+                            <button class="btn hidden" onclick="setQuickPeriod('month')" style="margin-right: 10px; background: #95a5a6;" data-lang="en">This Month</button>
+                            <button class="btn" onclick="setQuickPeriod('year')" style="background: #95a5a6;" data-lang="es">Este Año</button>
+                            <button class="btn hidden" onclick="setQuickPeriod('year')" style="background: #95a5a6;" data-lang="en">This Year</button>
+                        </div>
+                    </div>
+
+                    <div id="reportContent">
+                        <p data-lang="es">Seleccione las fechas de inicio y fin, luego genere el informe para ver los datos del período elegido</p>
+                        <p data-lang="en" class="hidden">Select start and end dates, then generate the report to see data for the chosen period</p>
+                    </div>
+                </div>
+
+                <div id="config" class="tab-content hidden">
+                    <h2 data-lang="es">⚙️ Configuración - <span id="configUserDisplay">Usuario 1</span></h2>
+                    <h2 data-lang="en" class="hidden">⚙️ Settings - <span id="configUserDisplayEn">User 1</span></h2>
+                    
+                    <div class="config-section">
+                        <h3 data-lang="es">👥 Nombres de Usuario</h3>
+                        <h3 data-lang="en" class="hidden">👥 User Names</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="form-group">
+                                <label data-lang="es">Nombre Usuario 1:</label>
+                                <label data-lang="en" class="hidden">User 1 Name:</label>
+                                <input type="text" id="configUser1Name" value="Usuario 1">
+                                <button class="btn" onclick="updateUserName('user1')" style="margin-top: 10px;" data-lang="es">Actualizar Nombre</button>
+                                <button class="btn hidden" onclick="updateUserName('user1')" style="margin-top: 10px;" data-lang="en">Update Name</button>
+                            </div>
+                            <div class="form-group">
+                                <label data-lang="es">Nombre Usuario 2:</label>
+                                <label data-lang="en" class="hidden">User 2 Name:</label>
+                                <input type="text" id="configUser2Name" value="Usuario 2">
+                                <button class="btn" onclick="updateUserName('user2')" style="margin-top: 10px;" data-lang="es">Actualizar Nombre</button>
+                                <button class="btn hidden" onclick="updateUserName('user2')" style="margin-top: 10px;" data-lang="en">Update Name</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-section">
+                        <h3 data-lang="es">🎯 Presupuesto Mensual</h3>
+                        <h3 data-lang="en" class="hidden">🎯 Monthly Budget</h3>
+                        <div class="form-group">
+                            <label data-lang="es">Presupuesto:</label>
+                            <label data-lang="en" class="hidden">Budget:</label>
+                            <input type="number" id="monthlyBudget" value="3000" step="100" min="0">
+                        </div>
+                        <button class="btn" id="updateBudgetBtn" data-lang="es">Actualizar Presupuesto</button>
+                        <button class="btn hidden" id="updateBudgetBtnEn" data-lang="en">Update Budget</button>
+                    </div>
+
+                    <div class="config-section">
+                        <h3 data-lang="es">🏷️ Categorías Personalizadas</h3>
+                        <h3 data-lang="en" class="hidden">🏷️ Custom Categories</h3>
+                        <p data-lang="es">Categorías actuales:</p>
+                        <p data-lang="en" class="hidden">Current categories:</p>
+                        <div class="category-list" id="categoryListDisplay">
+                            </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                            <div>
+                                <label data-lang="es">Agregar nueva categoría:</label>
+                                <label data-lang="en" class="hidden">Add new category:</label>
+                                <input type="text" id="newCategory" placeholder="Nombre de la categoría / Category name" maxlength="30">
+                                <div class="form-group">
+                                    <label data-lang="es">Tipo:</label>
+                                    <label data-lang="en" class="hidden">Type:</label>
+                                    <select id="newCategoryType">
+                                        <option value="income" data-lang="es">Ingreso</option>
+                                        <option value="income" data-lang="en" class="hidden">Income</option>
+                                        <option value="expense" data-lang="es">Gasto</option>
+                                        <option value="expense" data-lang="en" class="hidden">Expense</option>
+                                    </select>
+                                </div>
+                                <button class="btn" id="addCategoryBtn" data-lang="es">➕ Agregar</button>
+                                <button class="btn hidden" id="addCategoryBtnEn" data-lang="en">➕ Add</button>
+                            </div>
+                            <div>
+                                <label data-lang="es">Eliminar categoría:</label>
+                                <label data-lang="en" class="hidden">Delete category:</label>
+                                <select id="categoryToDelete">
+                                    <option value="" data-lang="es">Seleccionar categoría...</option>
+                                    <option value="" data-lang="en" class="hidden">Select category...</option>
+                                </select>
+                                <button class="btn btn-danger" id="deleteCategoryBtn" style="margin-top: 10px;" data-lang="es">🗑️ Eliminar</button>
+                                <button class="btn btn-danger hidden" id="deleteCategoryBtnEn" style="margin-top: 10px;" data-lang="en">🗑️ Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="instructions" class="tab-content hidden">
+                    <h2 data-lang="es">📖 Manual de Instrucciones</h2>
+                    <h2 data-lang="en" class="hidden">📖 Instruction Manual</h2>
+                    
+                    <div class="instructions">
+                        <h3 data-lang="es">🚀 Cómo usar EasyFinance</h3>
+                        <h3 data-lang="en" class="hidden">🚀 How to use EasyFinance</h3>
+                        
+                        <h4 data-lang="es">1. Dashboard</h4>
+                        <h4 data-lang="en" class="hidden">1. Dashboard</h4>
+                        <p data-lang="es">El dashboard muestra un resumen de tu situación financiera actual con ingresos, gastos, balance y alertas de presupuesto para el mes en curso.</p>
+                        <p data-lang="en" class="hidden">The dashboard shows a summary of your current financial situation with income, expenses, balance, and budget alerts for the current month.</p>
+
+                        <h4 data-lang="es">2. Registro de Transacciones</h4>
+                        <h4 data-lang="en" class="hidden">2. Transaction Log</h4>
+                        <p data-lang="es">Ve a la pestaña "Transacciones", selecciona el tipo (Ingreso o Gasto), elige una categoría, ingresa el monto y descripción, selecciona la fecha y haz clic en "Agregar Transacción".</p>
+                        <p data-lang="en" class="hidden">Go to the "Transactions" tab, select the type (Income or Expense), choose a category, enter the amount and description, select the date, and click "Add Transaction".</p>
+
+                        <h4 data-lang="es">3. Múltiples Usuarios</h4>
+                        <h4 data-lang="en" class="hidden">3. Multiple Users</h4>
+                        <p data-lang="es">El sistema permite 2 usuarios con datos completamente independientes. Puedes personalizar los nombres de los usuarios desde la configuración y cambiar entre ellos desde la barra superior.</p>
+                        <p data-lang="en" class="hidden">The system allows for 2 users with completely independent data. You can customize user names from the settings and switch between them from the top bar.</p>
+
+                        <h4 data-lang="es">4. Informes Personalizables</h4>
+                        <h4 data-lang="en" class="hidden">4. Customizable Reports</h4>
+                        <p data-lang="es">Genera informes de cualquier período seleccionando fechas de inicio y fin. Usa los botones rápidos para períodos comunes (hoy, semana, mes, año) o define tu propio rango personalizado.</p>
+                        <p data-lang="en" class="hidden">Generate reports for any period by selecting start and end dates. Use the quick buttons for common periods (today, week, month, year) or define your own custom range.</p>
+
+                        <h4 data-lang="es">5. Configuración</h4>
+                        <h4 data-lang="en" class="hidden">5. Settings</h4>
+                        <p data-lang="es">Personaliza los nombres de usuario, ajusta tu presupuesto mensual y gestiona categorías personalizadas desde la sección de configuración.</p>
+                        <p data-lang="en" class="hidden">Customize user names, adjust your monthly budget, and manage custom categories from the settings section.</p>
+
+                        <h4 data-lang="es">6. Seguridad del Sistema</h4>
+                        <h4 data-lang="en" class="hidden">6. System Security</h4>
+                        <p data-lang="es">EasyFinance está protegido con código de acceso y vinculado al equipo donde fue instalado para garantizar el uso autorizado únicamente.</p>
+                        <p data-lang="en" class="hidden">EasyFinance is protected with an access code and linked to the device where it was installed to ensure authorized use only.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="transactionModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeModal">&times;</span>
+                <h3 data-lang="es">🛠️ Administrar Transacciones</h3>
+                <h3 data-lang="en" class="hidden">🛠️ Manage Transactions</h3>
+                <div id="allTransactionsList">
+                    <p style="text-align: center; padding: 40px;" data-lang="es">No hay transacciones para administrar</p>
+                    <p style="text-align: center; padding: 40px;" data-lang="en" class="hidden">No transactions to manage</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="reassignModal" class="modal">
+            <div class="modal-content">
+                <h3 data-lang="es">Categorías Asociadas Encontradas</h3>
+                <h3 data-lang="en" class="hidden">Associated Categories Found</h3>
+                <p data-lang="es">La categoría <strong id="oldCategoryName"></strong> tiene transacciones asociadas. Por favor, selecciona una nueva categoría para reasignarlas.</p>
+                <p data-lang="en" class="hidden">The category <strong id="oldCategoryNameEn"></strong> has associated transactions. Please select a new category to reassign them.</p>
+                <div class="form-group">
+                    <label data-lang="es">Nueva Categoría:</label>
+                    <label data-lang="en" class="hidden">New Category:</label>
+                    <select id="reassignCategorySelect"></select>
+                </div>
+                <button class="btn btn-success" id="reassignBtn">Reasignar y Eliminar</button>
+                <button class="btn btn-danger" id="cancelReassignBtn">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // System for hardware protection
+        function generateMachineId() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = 'top';
+            ctx.font = '14px Arial';
+            ctx.fillText('EasyFinance Hardware ID', 2, 2);
+            
+            const screen = `${screen.width}x${screen.height}`;
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const platform = navigator.platform;
+            const hardwareId = canvas.toDataURL() + screen + timezone + platform;
+            
+            let hash = 0;
+            for (let i = 0; i < hardwareId.length; i++) {
+                const char = hardwareId.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash).toString(16).toUpperCase();
+        }
+
+        // System data
+        let currentUser = 'user1';
+        const userData = {
+            user1: {
+                name: 'Usuario 1',
+                transactions: [],
+                categories: {
+                    income: ['Salario', 'Freelance', 'Bonos', 'Inversiones'],
+                    expense: ['Alimentación', 'Transporte', 'Entretenimiento', 'Servicios', 'Salud', 'Educación']
+                },
+                monthlyBudget: 3000
+            },
+            user2: {
+                name: 'Usuario 2', 
+                transactions: [],
+                categories: {
+                    income: ['Salario', 'Freelance', 'Bonos', 'Inversiones'],
+                    expense: ['Alimentación', 'Transporte', 'Entretenimiento', 'Servicios', 'Salud', 'Educación']
+                },
+                monthlyBudget: 3000
+            }
+        };
+
+        const translations = {
+            es: {
+                categories: {
+                    Salario: 'Salario', Freelance: 'Freelance', Bonos: 'Bonos', Inversiones: 'Inversiones',
+                    Alimentación: 'Alimentación', Transporte: 'Transporte', Entretenimiento: 'Entretenimiento',
+                    Servicios: 'Servicios', Salud: 'Salud', Educación: 'Educación'
+                }
+            },
+            en: {
+                categories: {
+                    Salario: 'Salary', Freelance: 'Freelance', Bonos: 'Bonuses', Inversiones: 'Investments',
+                    Alimentación: 'Food', Transporte: 'Transport', Entretenimiento: 'Entertainment',
+                    Servicios: 'Utilities', Salud: 'Health', Educación: 'Education'
+                },
+                // Add translations for text content
+                '🔐 EasyFinance': '🔐 EasyFinance',
+                'Sistema de Gestión Financiera Personal': 'Personal Financial Management System',
+                'Código de acceso / Access code': 'Access code',
+                'Acceder al Sistema': 'Access System',
+                '🚫 Acceso Denegado': '🚫 Access Denied',
+                'Este sistema solo funciona en el equipo autorizado.': 'This system only works on the authorized device.',
+                'Código de equipo no reconocido.': 'Device code not recognized.',
+                '💰 EasyFinance': '💰 EasyFinance',
+                '👤 Usuario:': '👤 User:',
+                '📊 Dashboard - ': '📊 Dashboard - ',
+                '⚠️ Sobrepresupuesto - Los gastos del mes superan el presupuesto establecido': '⚠️ Overbudget - Monthly expenses exceed the set budget',
+                '💰 Ingresos del Mes': '💰 Monthly Income',
+                '💸 Gastos del Mes': '💸 Monthly Expenses',
+                '💵 Balance': '💵 Balance',
+                '🎯 Presupuesto': '🎯 Budget',
+                '📈 Distribución de Gastos': '📈 Expense Distribution',
+                'No hay gastos para mostrar en el gráfico de este mes.': 'No expenses to show in this month\'s chart.',
+                '💳 Registro de Transacciones - ': '💳 Transaction Log - ',
+                '➕ Nueva Transacción': '➕ New Transaction',
+                'Tipo:': 'Type:',
+                'Ingreso': 'Income',
+                'Gasto': 'Expense',
+                'Categoría:': 'Category:',
+                'Monto:': 'Amount:',
+                'Descripción:': 'Description:',
+                'Fecha:': 'Date:',
+                'Agregar Transacción': 'Add Transaction',
+                '📋 Transacciones Recientes': '📋 Recent Transactions',
+                'No hay transacciones registradas': 'No transactions registered',
+                '🛠️ Administrar Transacciones': '🛠️ Manage Transactions',
+                '📈 Informes y Análisis - ': '📈 Reports & Analysis - ',
+                '📅 Seleccionar Período del Informe': '📅 Select Report Period',
+                'Fecha de inicio:': 'Start Date:',
+                'Fecha de fin:': 'End Date:',
+                'Generar Informe': 'Generate Report',
+                'Hoy': 'Today',
+                'Esta Semana': 'This Week',
+                'Este Mes': 'This Month',
+                'Este Año': 'This Year',
+                'Seleccione las fechas de inicio y fin, luego genere el informe para ver los datos del período elegido': 'Select start and end dates, then generate the report to see data for the chosen period',
+                'La fecha de inicio no puede ser posterior a la fecha de fin.': 'The start date cannot be after the end date.',
+                'Total Ingresos': 'Total Income',
+                'Total Gastos': 'Total Expenses',
+                'Balance del Período': 'Period Balance',
+                'Resumen por Categoría': 'Summary by Category',
+                'Categoría': 'Category',
+                'Ingresos': 'Income',
+                'Gastos': 'Expenses',
+                'Balance': 'Balance',
+                '⚙️ Configuración - ': '⚙️ Settings - ',
+                '👥 Nombres de Usuario': '👥 User Names',
+                'Nombre Usuario 1:': 'User 1 Name:',
+                'Actualizar Nombre': 'Update Name',
+                'Nombre Usuario 2:': 'User 2 Name:',
+                '🎯 Presupuesto Mensual': '🎯 Monthly Budget',
+                'Presupuesto:': 'Budget:',
+                'Actualizar Presupuesto': 'Update Budget',
+                '🏷️ Categorías Personalizadas': '🏷️ Custom Categories',
+                'Categorías actuales:': 'Current categories:',
+                'Agregar nueva categoría:': 'Add new category:',
+                'Tipo:': 'Type:',
+                'Eliminar categoría:': 'Delete category:',
+                'Seleccionar categoría...': 'Select category...',
+                '🗑️ Eliminar': '🗑️ Delete',
+                '📖 Manual de Instrucciones': '📖 Instruction Manual',
+                '🚀 Cómo usar EasyFinance': '🚀 How to use EasyFinance',
+                '1. Dashboard': '1. Dashboard',
+                '2. Registro de Transacciones': '2. Transaction Log',
+                '3. Múltiples Usuarios': '3. Multiple Users',
+                '4. Informes Personalizables': '4. Customizable Reports',
+                '5. Configuración': '5. Settings',
+                '6. Seguridad del Sistema': '6. System Security',
+                'No hay transacciones para administrar': 'No transactions to manage',
+                'Categorías Asociadas Encontradas': 'Associated Categories Found',
+                'Nueva Categoría:': 'New Category:',
+                'Reasignar y Eliminar': 'Reassign and Delete',
+                'Cancelar': 'Cancel',
+                'El dashboard muestra un resumen de tu situación financiera actual con ingresos, gastos, balance y alertas de presupuesto para el mes en curso.': 'The dashboard shows a summary of your current financial situation with income, expenses, balance, and budget alerts for the current month.',
+                'Ve a la pestaña "Transacciones", selecciona el tipo (Ingreso o Gasto), elige una categoría, ingresa el monto y descripción, selecciona la fecha y haz clic en "Agregar Transacción".': 'Go to the "Transactions" tab, select the type (Income or Expense), choose a category, enter the amount and description, select the date, and click "Add Transaction".',
+                'El sistema permite 2 usuarios con datos completamente independientes. Puedes personalizar los nombres de los usuarios desde la configuración y cambiar entre ellos desde la barra superior.': 'The system allows for 2 users with completely independent data. You can customize user names from the settings and switch between them from the top bar.',
+                'Genera informes de cualquier período seleccionando fechas de inicio y fin. Usa los botones rápidos para períodos comunes (hoy, semana, mes, año) o define tu propio rango personalizado.': 'Generate reports for any period by selecting start and end dates. Use the quick buttons for common periods (today, week, month, year) or define your own custom range.',
+                'Personaliza los nombres de usuario, ajusta tu presupuesto mensual y gestiona categorías personalizadas desde la sección de configuración.': 'Customize user names, adjust your monthly budget, and manage custom categories from the settings section.',
+                'EasyFinance está protegido con código de acceso y vinculado al equipo donde fue instalado para garantizar el uso autorizado únicamente.': 'EasyFinance is protected with an access code and linked to the device where it was installed to ensure authorized use only.',
+                'Por favor ingrese el código de acceso': 'Please enter the access code',
+                'Incorrect access code': 'Incorrect access code',
+                'Por favor, complete todos los campos de la transacción.': 'Please fill in all transaction fields.',
+                '¿Estás seguro de que quieres eliminar esta transacción?': 'Are you sure you want to delete this transaction?',
+                'Nombre actualizado exitosamente': 'Name updated successfully',
+                'Por favor, ingrese un valor de presupuesto válido.': 'Please enter a valid budget value.',
+                'La categoría ya existe.': 'The category already exists.',
+                'Ingrese la traducción al inglés para la categoría:': 'Enter the English translation for the category:',
+                'Categoría agregada exitosamente.': 'Category added successfully.',
+                'La categoría no se ha guardado.': 'Category not saved.',
+                'Por favor, seleccione una categoría para eliminar.': 'Please select a category to delete.',
+                '¿Estás seguro de que quieres eliminar la categoría "${categoryName}"?': `Are you sure you want to delete the category "${categoryName}"?`,
+                'Por favor, selecciona una nueva categoría.': 'Please select a new category.',
+                'Categoría eliminada y transacciones reasignadas.': 'Category deleted and transactions reassigned.',
+            }
+        };
+
+        let currentLang = 'es';
+        let categoryChartInstance = null;
+        let categoryToDeleteInfo = null;
+
+        // Initialization when the DOM loads
+        document.addEventListener('DOMContentLoaded', function() {
+            machineId = generateMachineId();
+            initializeEventListeners();
+            loadLanguagePreference();
+            loadData();
+            updateUserDisplayNames();
+            updateDashboard();
+            updateCategoryDisplay();
+            updateDeleteCategorySelector();
+            updateCategoryOptions();
+            setDefaultDates();
+        });
+
+        function initializeEventListeners() {
+            // Language Selector on Auth Screen
+            document.getElementById('languageSelectorAuth').addEventListener('change', function() {
+                switchLanguage(this.value);
+            });
+
+            // Authentication
+            document.getElementById('loginBtn').addEventListener('click', authenticate);
+            document.getElementById('licenseKey').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') authenticate();
+            });
+
+            // Navigation
+            const navTabs = document.querySelectorAll('.nav-tab');
+            navTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    showTab(this.dataset.tab);
+                });
+            });
+
+            // Language Selector inside app
+            document.getElementById('languageSelector').addEventListener('change', function() {
+                switchLanguage(this.value);
+            });
+
+            // User
+            document.getElementById('userSelector').addEventListener('change', switchUser);
+            document.getElementById('user1Name').addEventListener('change', updateUserDisplayNames);
+            document.getElementById('user2Name').addEventListener('change', updateUserDisplayNames);
+
+            // Transactions
+            document.getElementById('transactionType').addEventListener('change', updateCategoryOptions);
+            document.getElementById('addTransactionBtn').addEventListener('click', addTransaction);
+            document.getElementById('manageTransactionsBtn').addEventListener('click', showTransactionManager);
+
+            // Reports
+            document.getElementById('generateReportBtn').addEventListener('click', generateReport);
+
+            // Settings
+            document.getElementById('updateBudgetBtn').addEventListener('click', updateBudget);
+            document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
+            document.getElementById('deleteCategoryBtn').addEventListener('click', deleteCategory);
+
+
+            // Modal
+            document.getElementById('closeModal').addEventListener('click', closeTransactionModal);
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('transactionModal');
+                if (event.target === modal) {
+                    closeTransactionModal();
+                }
+            });
+            document.getElementById('reassignBtn').addEventListener('click', reassignAndDelete);
+            document.getElementById('cancelReassignBtn').addEventListener('click', () => {
+                document.getElementById('reassignModal').style.display = 'none';
+            });
+        }
+
+        // --- Data Management ---
+        function saveData() {
+            localStorage.setItem('easyfinance_data', JSON.stringify(userData));
+        }
+
+        function loadData() {
+            const savedData = localStorage.getItem('easyfinance_data');
+            if (savedData) {
+                Object.assign(userData, JSON.parse(savedData));
+            }
+        }
+
+        function saveLanguagePreference() {
+            localStorage.setItem('easyfinance_lang', currentLang);
+        }
+
+        function loadLanguagePreference() {
+            const savedLang = localStorage.getItem('easyfinance_lang');
+            if (savedLang) {
+                currentLang = savedLang;
+                document.getElementById('languageSelectorAuth').value = currentLang;
+                if(document.getElementById('languageSelector')) {
+                    document.getElementById('languageSelector').value = currentLang;
+                }
+            }
+            switchLanguage(currentLang);
+        }
+
+        // --- Authentication and Security ---
+        function authenticate() {
+            const licenseKey = document.getElementById('licenseKey').value.trim();
+            
+            if (!licenseKey) {
+                alert(translations[currentLang]['Por favor ingrese el código de acceso']);
+                return;
+            }
+            
+            if (licenseKey === systemPassword) {
+                const storedMachineId = localStorage.getItem('easyfinance_machine_id');
+                
+                if (!storedMachineId) {
+                    localStorage.setItem('easyfinance_machine_id', machineId);
+                    document.getElementById('authScreen').style.display = 'none';
+                    document.getElementById('mainApp').style.display = 'block';
+                } else if (storedMachineId === machineId) {
+                    document.getElementById('authScreen').style.display = 'none';
+                    document.getElementById('mainApp').style.display = 'block';
+                } else {
+                    document.getElementById('accessDenied').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('accessDenied').style.display = 'none';
+                    }, 5000);
+                }
+            } else {
+                alert(translations[currentLang]['Incorrect access code']);
+            }
+        }
+
+        // --- System Functionality ---
+        function switchLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                if (el.dataset.lang === lang) {
+                    el.classList.remove('hidden');
+                } else {
+                    el.classList.add('hidden');
+                }
+            });
+
+            // Translate dynamic text
+            document.querySelectorAll('[data-translatable]').forEach(el => {
+                const originalText = el.getAttribute('data-translatable');
+                el.textContent = translations[currentLang][originalText] || originalText;
+            });
+            
+            saveLanguagePreference();
+            updateCategoryOptions();
+            updateDeleteCategorySelector();
+            updateUserDisplayNames();
+        }
+        
+        // This function will handle all translations based on the new structure
+        function getTranslation(key) {
+            return translations[currentLang][key] || key;
+        }
+
+        // Modified functions to use getTranslation
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(tabName).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll(`.nav-tab[data-tab="${tabName}"]`).forEach(tab => tab.classList.add('active'));
+
+            if (tabName === 'dashboard') {
+                updateDashboard();
+            } else if (tabName === 'transactions') {
+                renderRecentTransactions();
+            } else if (tabName === 'reports') {
+                generateReport();
+            } else if (tabName === 'config') {
+                document.getElementById('monthlyBudget').value = getCurrentBudget();
+                updateCategoryDisplay();
+            }
+        }
+
+        function switchUser() {
+            currentUser = document.getElementById('userSelector').value;
+            updateUserDisplayNames();
+            updateDashboard();
+            updateCategoryOptions();
+            showTab('dashboard');
+        }
+
+        function updateUserName(user) {
+            const newName = document.getElementById(`config${user.charAt(0).toUpperCase() + user.slice(1)}Name`).value.trim();
+            if (newName) {
+                userData[user].name = newName;
+                updateUserDisplayNames();
+                saveData();
+                alert(getTranslation('Nombre actualizado exitosamente'));
+            }
+        }
+
+        function updateUserDisplayNames() {
+            const user1Name = document.getElementById('configUser1Name').value;
+            const user2Name = document.getElementById('configUser2Name').value;
+            
+            userData.user1.name = user1Name;
+            userData.user2.name = user2Name;
+            
+            const userSelector = document.getElementById('userSelector');
+            userSelector.innerHTML = `
+                <option value="user1">${user1Name}</option>
+                <option value="user2">${user2Name}</option>
+            `;
+            userSelector.value = currentUser;
+            
+            document.getElementById('currentUserDisplay').textContent = userData[currentUser].name;
+            document.getElementById('transactionsUserDisplay').textContent = userData[currentUser].name;
+            document.getElementById('reportsUserDisplay').textContent = userData[currentUser].name;
+            document.getElementById('configUserDisplay').textContent = userData[currentUser].name;
+            
+            document.getElementById('currentUserDisplayEn').textContent = userData[currentUser].name;
+            document.getElementById('transactionsUserDisplayEn').textContent = userData[currentUser].name;
+            document.getElementById('reportsUserDisplayEn').textContent = userData[currentUser].name;
+            document.getElementById('configUserDisplayEn').textContent = userData[currentUser].name;
+            
+            document.getElementById('user1Name').value = user1Name;
+            document.getElementById('user2Name').value = user2Name;
+        }
+
+        function getCurrentTransactions() {
+            return userData[currentUser].transactions;
+        }
+
+        function getCurrentCategories() {
+            return userData[currentUser].categories;
+        }
+
+        function getCurrentBudget() {
+            return userData[currentUser].monthlyBudget;
+        }
+
+        function updateDashboard() {
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            
+            let monthlyIncome = 0;
+            let monthlyExpenses = 0;
+
+            getCurrentTransactions().forEach(t => {
+                const tDate = new Date(t.date);
+                if (tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear) {
+                    if (t.type === 'income') {
+                        monthlyIncome += t.amount;
+                    } else {
+                        monthlyExpenses += t.amount;
+                    }
+                }
+            });
+
+            const balance = monthlyIncome - monthlyExpenses;
+            const monthlyBudget = getCurrentBudget();
+
+            document.getElementById('monthlyIncome').textContent = `$${monthlyIncome.toFixed(2)}`;
+            document.getElementById('monthlyExpenses').textContent = `$${monthlyExpenses.toFixed(2)}`;
+            document.getElementById('balance').textContent = `$${balance.toFixed(2)}`;
+            document.getElementById('budget').textContent = `$${monthlyBudget.toFixed(2)}`;
+
+            if (monthlyExpenses > monthlyBudget) {
+                document.getElementById('budgetAlert').style.display = 'block';
+            } else {
+                document.getElementById('budgetAlert').style.display = 'none';
+            }
+
+            renderCategoryChart();
+        }
+
+        function addTransaction() {
+            const type = document.getElementById('transactionType').value;
+            const category = document.getElementById('category').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const description = document.getElementById('description').value.trim();
+            const date = document.getElementById('transactionDate').value;
+            
+            if (isNaN(amount) || amount <= 0 || !category || !description || !date) {
+                alert(getTranslation('Por favor, complete todos los campos de la transacción.'));
+                return;
+            }
+
+            const newTransaction = {
+                id: Date.now(),
+                type,
+                category,
+                amount,
+                description,
+                date
+            };
+
+            getCurrentTransactions().unshift(newTransaction);
+            saveData();
+            
+            document.getElementById('amount').value = '';
+            document.getElementById('description').value = '';
+
+            renderRecentTransactions();
+            updateDashboard();
+        }
+
+        function renderRecentTransactions() {
+            const transactionsList = document.getElementById('transactionsList');
+            const recentTransactions = getCurrentTransactions().slice(0, 5);
+            
+            if (recentTransactions.length === 0) {
+                transactionsList.innerHTML = `<p style="text-align: center; color: #666; padding: 40px;">${getTranslation('No hay transacciones registradas')}</p>`;
+                return;
+            }
+
+            transactionsList.innerHTML = '';
+            const table = document.createElement('table');
+            table.classList.add('table');
+            const headers = [getTranslation('Fecha'), getTranslation('Descripción'), getTranslation('Categoría'), getTranslation('Monto')];
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>${headers[0]}</th>
+                        <th>${headers[1]}</th>
+                        <th>${headers[2]}</th>
+                        <th>${headers[3]}</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            `;
+
+            const tbody = table.querySelector('tbody');
+            recentTransactions.forEach(t => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${t.date}</td>
+                    <td>${t.description}</td>
+                    <td>${getTranslation(t.category)}</td>
+                    <td class="${t.type}">${t.type === 'expense' ? '-' : '+'}$${t.amount.toFixed(2)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            transactionsList.appendChild(table);
+        }
+
+        function showTransactionManager() {
+            const modal = document.getElementById('transactionModal');
+            const allTransactionsList = document.getElementById('allTransactionsList');
+            
+            const allTransactions = getCurrentTransactions().sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (allTransactions.length === 0) {
+                allTransactionsList.innerHTML = `<p style="text-align: center; padding: 40px;">${getTranslation('No hay transacciones para administrar')}</p>`;
+            } else {
+                allTransactionsList.innerHTML = '';
+                const table = document.createElement('table');
+                table.classList.add('table');
+                const headers = [getTranslation('Fecha'), getTranslation('Descripción'), getTranslation('Categoría'), getTranslation('Monto'), getTranslation('Acción')];
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>${headers[0]}</th>
+                            <th>${headers[1]}</th>
+                            <th>${headers[2]}</th>
+                            <th>${headers[3]}</th>
+                            <th>${headers[4]}</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                `;
+                const tbody = table.querySelector('tbody');
+                allTransactions.forEach(t => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${t.date}</td>
+                        <td>${t.description}</td>
+                        <td>${getTranslation(t.category)}</td>
+                        <td class="${t.type}">${t.type === 'expense' ? '-' : '+'}$${t.amount.toFixed(2)}</td>
+                        <td><button class="btn btn-danger" onclick="deleteTransaction(${t.id})">${getTranslation('Eliminar')}</button></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                allTransactionsList.appendChild(table);
+            }
+
+            modal.style.display = 'block';
+        }
+
+        function closeTransactionModal() {
+            document.getElementById('transactionModal').style.display = 'none';
+            renderRecentTransactions();
+            updateDashboard();
+        }
+
+        function deleteTransaction(id) {
+            if (confirm(getTranslation('¿Estás seguro de que quieres eliminar esta transacción?'))) {
+                userData[currentUser].transactions = getCurrentTransactions().filter(t => t.id !== id);
+                saveData();
+                showTransactionManager();
+                updateDashboard();
+            }
+        }
+
+        function generateReport() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const reportContent = document.getElementById('reportContent');
+            
+            if (!startDate || !endDate) {
+                reportContent.innerHTML = `<p>${getTranslation('Seleccione las fechas de inicio y fin, luego genere el informe para ver los datos del período elegido')}</p>`;
+                return;
+            }
+
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            
+            if (start > end) {
+                reportContent.innerHTML = `<p style="color: red;">${getTranslation('La fecha de inicio no puede ser posterior a la fecha de fin.')}</p>`;
+                return;
+            }
+
+            const filteredTransactions = getCurrentTransactions().filter(t => {
+                const tDate = new Date(t.date);
+                return tDate >= start && tDate <= end;
+            });
+
+            let totalIncome = 0;
+            let totalExpense = 0;
+            const categorySummary = {};
+
+            filteredTransactions.forEach(t => {
+                if (t.type === 'income') {
+                    totalIncome += t.amount;
+                } else {
+                    totalExpense += t.amount;
+                }
+                if (!categorySummary[t.category]) {
+                    categorySummary[t.category] = { income: 0, expense: 0 };
+                }
+                categorySummary[t.category][t.type] += t.amount;
+            });
+
+            let summaryHTML = `
+                <div class="dashboard-grid" style="margin-bottom: 20px;">
+                    <div class="kpi-card" style="background: #27ae60;">
+                        <h3>${getTranslation('Total Ingresos')}</h3>
+                        <div class="kpi-value">$${totalIncome.toFixed(2)}</div>
+                    </div>
+                    <div class="kpi-card" style="background: #e74c3c;">
+                        <h3>${getTranslation('Total Gastos')}</h3>
+                        <div class="kpi-value">$${totalExpense.toFixed(2)}</div>
+                    </div>
+                    <div class="kpi-card" style="background: #3498db;">
+                        <h3>${getTranslation('Balance del Período')}</h3>
+                        <div class="kpi-value">$${(totalIncome - totalExpense).toFixed(2)}</div>
+                    </div>
+                </div>
+
+                <h3>${getTranslation('Resumen por Categoría')}</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>${getTranslation('Categoría')}</th>
+                            <th>${getTranslation('Ingresos')}</th>
+                            <th>${getTranslation('Gastos')}</th>
+                            <th>${getTranslation('Balance')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            for (const category in categorySummary) {
+                const income = categorySummary[category].income;
+                const expense = categorySummary[category].expense;
+                summaryHTML += `
+                    <tr>
+                        <td>${getTranslation(category)}</td>
+                        <td class="income">$${income.toFixed(2)}</td>
+                        <td class="expense">$${expense.toFixed(2)}</td>
+                        <td>$${(income - expense).toFixed(2)}</td>
+                    </tr>
+                `;
+            }
+            summaryHTML += `</tbody></table>`;
+            reportContent.innerHTML = summaryHTML;
+        }
+
+        function setQuickPeriod(period) {
+            const today = new Date();
+            const startDate = document.getElementById('startDate');
+            const endDate = document.getElementById('endDate');
+            
+            switch(period) {
+                case 'today':
+                    startDate.value = today.toISOString().split('T')[0];
+                    endDate.value = today.toISOString().split('T')[0];
+                    break;
+                case 'week':
+                    const startOfWeek = new Date(today);
+                    startOfWeek.setDate(today.getDate() - today.getDay());
+                    startDate.value = startOfWeek.toISOString().split('T')[0];
+                    endDate.value = today.toISOString().split('T')[0];
+                    break;
+                case 'month':
+                    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                    startDate.value = startOfMonth.toISOString().split('T')[0];
+                    endDate.value = today.toISOString().split('T')[0];
+                    break;
+                case 'year':
+                    const startOfYear = new Date(today.getFullYear(), 0, 1);
+                    startDate.value = startOfYear.toISOString().split('T')[0];
+                    endDate.value = today.toISOString().split('T')[0];
+                    break;
+            }
+        }
+
+        function setDefaultDates() {
+            const today = new Date();
+            const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            
+            document.getElementById('startDate').value = startOfMonth.toISOString().split('T')[0];
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+        }
+
+        function updateBudget() {
+            const newBudget = parseFloat(document.getElementById('monthlyBudget').value);
+            if (!isNaN(newBudget) && newBudget >= 0) {
+                userData[currentUser].monthlyBudget = newBudget;
+                saveData();
+                updateDashboard();
+                alert(getTranslation('Presupuesto mensual actualizado.'));
+            } else {
+                alert(getTranslation('Por favor, ingrese un valor de presupuesto válido.'));
+            }
+        }
+
+        function updateCategoryOptions() {
+            const type = document.getElementById('transactionType').value;
+            const categorySelect = document.getElementById('category');
+            const categories = getCurrentCategories()[type];
+            
+            categorySelect.innerHTML = '';
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = getTranslation(cat);
+                categorySelect.appendChild(option);
+            });
+        }
+
+        function updateCategoryDisplay() {
+            const categoryListDisplay = document.getElementById('categoryListDisplay');
+            const allCategories = [...getCurrentCategories().income, ...getCurrentCategories().expense];
+            categoryListDisplay.innerHTML = allCategories.map(cat => `<span class="category-tag">${getTranslation(cat)}</span>`).join('');
+        }
+        
+        function updateDeleteCategorySelector() {
+            const categoryToDeleteSelect = document.getElementById('categoryToDelete');
+            const allCategories = [...getCurrentCategories().income, ...getCurrentCategories().expense];
+            
+            categoryToDeleteSelect.innerHTML = `<option value="">${getTranslation('Seleccionar categoría...')}</option>`;
+            allCategories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = getTranslation(cat);
+                categoryToDeleteSelect.appendChild(option);
+            });
+        }
+
+        function addCategory() {
+            const newCategoryName = document.getElementById('newCategory').value.trim();
+            const newCategoryType = document.getElementById('newCategoryType').value;
+
+            if (!newCategoryName) {
+                alert(getTranslation('Por favor, ingrese un nombre para la categoría.'));
+                return;
+            }
+            
+            const allCategories = [...getCurrentCategories().income, ...getCurrentCategories().expense];
+            if (allCategories.includes(newCategoryName)) {
+                alert(getTranslation('La categoría ya existe.'));
+                return;
+            }
+
+            const newCategoryNameEn = prompt(getTranslation('Ingrese la traducción al inglés para la categoría:'), newCategoryName);
+            
+            if (newCategoryNameEn !== null && newCategoryNameEn.trim() !== '') {
+                userData[currentUser].categories[newCategoryType].push(newCategoryName);
+                translations.es.categories[newCategoryName] = newCategoryName;
+                translations.en.categories[newCategoryName] = newCategoryNameEn.trim();
+                saveData();
+                document.getElementById('newCategory').value = '';
+                
+                updateCategoryDisplay();
+                updateCategoryOptions();
+                updateDeleteCategorySelector();
+                alert(getTranslation('Categoría agregada exitosamente.'));
+            } else {
+                alert(getTranslation('La categoría no se ha guardado.'));
+            }
+        }
+        
+        function deleteCategory() {
+            const categoryName = document.getElementById('categoryToDelete').value;
+            if (!categoryName) {
+                alert(getTranslation('Por favor, seleccione una categoría para eliminar.'));
+                return;
+            }
+
+            const associatedTransactions = getCurrentTransactions().filter(t => t.category === categoryName);
+            if (associatedTransactions.length > 0) {
+                categoryToDeleteInfo = { name: categoryName, type: associatedTransactions[0].type };
+                document.getElementById('oldCategoryName').textContent = categoryName;
+                document.getElementById('oldCategoryNameEn').textContent = getTranslation(categoryName);
+                
+                const reassignSelect = document.getElementById('reassignCategorySelect');
+                reassignSelect.innerHTML = '';
+                const allCategories = [...getCurrentCategories().income, ...getCurrentCategories().expense];
+                allCategories.filter(cat => cat !== categoryName).forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = getTranslation(cat);
+                    reassignSelect.appendChild(option);
+                });
+
+                document.getElementById('reassignModal').style.display = 'block';
+            } else {
+                if (confirm(getTranslation('¿Estás seguro de que quieres eliminar la categoría "${categoryName}"?').replace('${categoryName}', categoryName))) {
+                    performDelete(categoryName);
+                }
+            }
+        }
+
+        function reassignAndDelete() {
+            const newCategory = document.getElementById('reassignCategorySelect').value;
+            if (!newCategory) {
+                alert(getTranslation('Por favor, selecciona una nueva categoría.'));
+                return;
+            }
+
+            const oldCategoryName = categoryToDeleteInfo.name;
+            const transactionsToUpdate = getCurrentTransactions().filter(t => t.category === oldCategoryName);
+            transactionsToUpdate.forEach(t => t.category = newCategory);
+
+            performDelete(oldCategoryName);
+            document.getElementById('reassignModal').style.display = 'none';
+        }
+
+        function performDelete(categoryName) {
+            for (const type in getCurrentCategories()) {
+                const index = userData[currentUser].categories[type].indexOf(categoryName);
+                if (index > -1) {
+                    userData[currentUser].categories[type].splice(index, 1);
+                }
+            }
+            saveData();
+            updateCategoryDisplay();
+            updateCategoryOptions();
+            updateDeleteCategorySelector();
+            updateDashboard();
+            alert(getTranslation('Categoría eliminada y transacciones reasignadas.'));
+        }
+
+        function renderCategoryChart() {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            const expensesByCategory = {};
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+
+            getCurrentTransactions().forEach(t => {
+                const tDate = new Date(t.date);
+                if (t.type === 'expense' && tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear) {
+                    expensesByCategory[t.category] = (expensesByCategory[t.category] || 0) + t.amount;
+                }
+            });
+
+            const labels = Object.keys(expensesByCategory).map(cat => getTranslation(cat));
+            const data = Object.values(expensesByCategory);
+
+            const colors = [
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+                '#E74C3C', '#2ECC71', '#3498DB', '#F1C40F', '#9B59B6', '#1ABC9C'
+            ];
+
+            const chartTitle = getTranslation('Distribución de Gastos del Mes');
+            const noDataMsg = getTranslation('No hay gastos para mostrar en el gráfico de este mes.');
+            
+            if (data.length === 0) {
+                document.getElementById('noChartData').textContent = noDataMsg;
+                document.getElementById('noChartData').style.display = 'block';
+                if (categoryChartInstance) {
+                    categoryChartInstance.destroy();
+                    categoryChartInstance = null;
+                }
+                document.getElementById('categoryChart').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('noChartData').style.display = 'none';
+            document.getElementById('categoryChart').style.display = 'block';
+
+            if (categoryChartInstance) {
+                categoryChartInstance.destroy();
+            }
+
+            categoryChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length)
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                font: {
+                                    size: 14,
+                                    family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+                                }
+                            }
+                        },
+                        title: {
+                            display: false,
+                            text: chartTitle,
+                            font: {
+                                size: 18,
+                                family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
