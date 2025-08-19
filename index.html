@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EasyFinance - Financial Management System</title>
     <style>
+        /* CSS styles here (same as before) */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -338,13 +339,14 @@
             <p style="margin: 20px 0; color: #666;" data-lang="es">Sistema de Gestión Financiera Personal</p>
             <p style="margin: 20px 0; color: #666;" data-lang="en" class="hidden">Personal Financial Management System</p>
             <div class="form-group">
-                <input type="password" id="licenseKey" placeholder="Código de acceso / Access code" style="text-align: center; font-weight: bold;">
+                <input type="text" id="licenseKey" placeholder="Código de activación / Activation Code" style="text-align: center; font-weight: bold;">
             </div>
             <select id="languageSelectorAuth" style="width: 100%; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
                 <option value="es">Español</option>
                 <option value="en">English</option>
             </select>
             <button class="btn" id="loginBtn">Acceder al Sistema</button>
+            <p id="authMessage" style="color: red; margin-top: 15px;"></p>
         </div>
 
         <div id="mainApp" class="app-container">
@@ -634,8 +636,8 @@
 
                         <h4 data-lang="es">6. Seguridad del Sistema</h4>
                         <h4 data-lang="en" class="hidden">6. System Security</h4>
-                        <p data-lang="es">EasyFinance está protegido con código de acceso.</p>
-                        <p data-lang="en" class="hidden">EasyFinance is protected with an access code.</p>
+                        <p data-lang="es">EasyFinance está protegido con un código de activación único para cada usuario.</p>
+                        <p data-lang="en" class="hidden">EasyFinance is protected with a unique activation code for each user.</p>
                     </div>
                 </div>
             </div>
@@ -676,7 +678,6 @@
         // System data
         let currentUser = 'user1';
         let categoryToDeleteInfo = null;
-        const systemPassword = "EasyFinance";
 
         const userData = {
             user1: {
@@ -708,7 +709,7 @@
                 },
                 '🔐 EasyFinance': '🔐 EasyFinance',
                 'Sistema de Gestión Financiera Personal': 'Sistema de Gestión Financiera Personal',
-                'Código de acceso / Access code': 'Código de acceso / Access code',
+                'Código de activación / Activation Code': 'Código de activación / Activation Code',
                 'Acceder al Sistema': 'Acceder al Sistema',
                 '💰 EasyFinance': '💰 EasyFinance',
                 '👤 Usuario:': '👤 Usuario:',
@@ -774,8 +775,8 @@
                 '3. Múltiples Usuarios': '3. Múltiples Usuarios',
                 '4. Informes Personalizables': '4. Informes Personalizables',
                 '5. Configuración': '5. Configuración',
-                '6. Seguridad del Sistema': '6. Seguridad del Sistema',
-                'EasyFinance está protegido con código de acceso.': 'EasyFinance está protegido con código de acceso.',
+                '6. Seguridad del Sistema': '6. System Security',
+                'EasyFinance está protegido con un código de activación único para cada usuario.': 'EasyFinance está protegido con un código de activación único para cada usuario.',
                 'No hay transacciones para administrar': 'No hay transacciones para administrar',
                 'Categorías Asociadas Encontradas': 'Categorías Asociadas Encontradas',
                 'Nueva Categoría:': 'Nueva Categoría:',
@@ -800,6 +801,7 @@
                 '¿Estás seguro de que quieres eliminar la categoría "${categoryName}"?': (categoryName) => `¿Estás seguro de que quieres eliminar la categoría "${categoryName}"?`,
                 'Por favor, selecciona una nueva categoría.': 'Por favor, selecciona una nueva categoría.',
                 'Categoría eliminada y transacciones reasignadas.': 'Categoría eliminada y transacciones reasignadas.',
+                'Código de activación no válido. Por favor, verifica el código.': 'Código de activación no válido. Por favor, verifica el código.',
             },
             en: {
                 categories: {
@@ -809,7 +811,7 @@
                 },
                 '🔐 EasyFinance': '🔐 EasyFinance',
                 'Sistema de Gestión Financiera Personal': 'Personal Financial Management System',
-                'Código de acceso / Access code': 'Access code',
+                'Código de activación / Activation Code': 'Activation Code',
                 'Acceder al Sistema': 'Access System',
                 '💰 EasyFinance': '💰 EasyFinance',
                 '👤 Usuario:': '👤 User:',
@@ -876,7 +878,7 @@
                 '4. Informes Personalizables': '4. Customizable Reports',
                 '5. Configuración': '5. Settings',
                 '6. Seguridad del Sistema': '6. System Security',
-                'EasyFinance está protegido con código de acceso.': 'EasyFinance is protected with an access code.',
+                'EasyFinance está protegido con un código de activación único para cada usuario.': 'EasyFinance is protected with a unique activation code for each user.',
                 'No hay transacciones para administrar': 'No transactions to manage',
                 'Categorías Asociadas Encontradas': 'Associated Categories Found',
                 'Nueva Categoría:': 'New Category:',
@@ -887,8 +889,8 @@
                 'El sistema permite 2 usuarios con datos completamente independientes. Puedes personalizar los nombres de los usuarios desde la configuración y cambiar entre ellos desde la barra superior.': 'The system allows for 2 users with completely independent data. You can customize user names from the settings and switch between them from the top bar.',
                 'Genera informes de cualquier período seleccionando fechas de inicio y fin. Usa los botones rápidos para períodos comunes (hoy, semana, mes, año) o define tu propio rango personalizado.': 'Generate reports for any period by selecting start and end dates. Use the quick buttons for common periods (today, week, month, year) or define your own custom range.',
                 'Personaliza los nombres de usuario, ajusta tu presupuesto mensual y gestiona categorías personalizadas desde la sección de configuración.': 'Customize user names, adjust your monthly budget, and manage custom categories from the settings section.',
-                'Por favor ingrese el código de acceso': 'Please enter the access code',
-                'Incorrect access code': 'Incorrect access code',
+                'Por favor ingrese el código de acceso': 'Please enter the activation code',
+                'Incorrect access code': 'Incorrect activation code',
                 'Por favor, complete todos los campos de la transacción.': 'Please fill in all transaction fields.',
                 '¿Estás seguro de que quieres eliminar esta transacción?': 'Are you sure you want to delete this transaction?',
                 'Nombre actualizado exitosamente': 'Name updated successfully',
@@ -901,16 +903,106 @@
                 '¿Estás seguro de que quieres eliminar la categoría "${categoryName}"?': (categoryName) => `Are you sure you want to delete the category "${categoryName}"?`,
                 'Por favor, selecciona una nueva categoría.': 'Please select a new category.',
                 'Categoría eliminada y transacciones reasignadas.': 'Category deleted and transactions re-assigned.',
+                'Código de activación no válido. Por favor, verifica el código.': 'Invalid activation code. Please check the code.',
             }
         };
 
         let currentLang = 'es';
-        let categoryChartInstance = null;
+        let categoryToDeleteInfo = null;
         
-        // Initialization when the DOM loads
+        // System data management. localStorage is used for persistence.
+        const userData = {
+            user1: {
+                name: 'Usuario 1',
+                transactions: [],
+                categories: {
+                    income: ['Salario', 'Freelance', 'Bonos', 'Inversiones'],
+                    expense: ['Alimentación', 'Transporte', 'Entretenimiento', 'Servicios', 'Salud', 'Educación']
+                },
+                monthlyBudget: 3000
+            },
+            user2: {
+                name: 'Usuario 2', 
+                transactions: [],
+                categories: {
+                    income: ['Salario', 'Freelance', 'Bonos', 'Inversiones'],
+                    expense: ['Alimentación', 'Transporte', 'Entretenimiento', 'Servicios', 'Salud', 'Educación']
+                },
+                monthlyBudget: 3000
+            }
+        };
+
+        function saveData() {
+            localStorage.setItem('easyfinance_data', JSON.stringify(userData));
+        }
+
+        function loadData() {
+            const savedData = localStorage.getItem('easyfinance_data');
+            if (savedData) {
+                Object.assign(userData, JSON.parse(savedData));
+            }
+        }
+
+        function saveLanguagePreference() {
+            localStorage.setItem('easyfinance_lang', currentLang);
+        }
+
+        function loadLanguagePreference() {
+            const savedLang = localStorage.getItem('easyfinance_lang');
+            if (savedLang) {
+                currentLang = savedLang;
+                document.getElementById('languageSelectorAuth').value = currentLang;
+                if(document.getElementById('languageSelector')) {
+                    document.getElementById('languageSelector').value = currentLang;
+                }
+            }
+            switchLanguage(currentLang);
+        }
+
+        // --- Authentication and Security ---
+        async function authenticate() {
+            const licenseKey = document.getElementById('licenseKey').value.trim().toUpperCase();
+            const authMessage = document.getElementById('authMessage');
+
+            if (!licenseKey) {
+                authMessage.textContent = getTranslation('Por favor ingrese el código de acceso');
+                return;
+            }
+
+            try {
+                const response = await fetch('codes.txt');
+                if (!response.ok) {
+                    authMessage.textContent = 'Error de conexión. Por favor, intenta de nuevo.';
+                    return;
+                }
+                const text = await response.text();
+                const validCodes = text.split('\n').map(code => code.trim()).filter(code => code.length > 0);
+                
+                if (validCodes.includes(licenseKey)) {
+                    document.getElementById('authScreen').style.display = 'none';
+                    document.getElementById('mainApp').style.display = 'block';
+                    localStorage.setItem('easyfinance_auth_key', licenseKey);
+                } else {
+                    authMessage.textContent = getTranslation('Código de activación no válido. Por favor, verifica el código.');
+                }
+            } catch (error) {
+                console.error('Error de autenticación:', error);
+                authMessage.textContent = 'Error de conexión. Por favor, intenta de nuevo.';
+            }
+        }
+        
+        function checkAuth() {
+            const storedKey = localStorage.getItem('easyfinance_auth_key');
+            if (storedKey) {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+            }
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
             initializeEventListeners();
             loadLanguagePreference();
+            checkAuth();
             loadData();
             updateUserDisplayNames();
             updateDashboard();
@@ -920,6 +1012,8 @@
             setDefaultDates();
         });
 
+
+        // --- UI & Event Handlers ---
         function initializeEventListeners() {
             // Language Selector on Auth Screen
             document.getElementById('languageSelectorAuth').addEventListener('change', function() {
@@ -984,52 +1078,6 @@
             });
         }
 
-        // --- Data Management ---
-        function saveData() {
-            localStorage.setItem('easyfinance_data', JSON.stringify(userData));
-        }
-
-        function loadData() {
-            const savedData = localStorage.getItem('easyfinance_data');
-            if (savedData) {
-                Object.assign(userData, JSON.parse(savedData));
-            }
-        }
-
-        function saveLanguagePreference() {
-            localStorage.setItem('easyfinance_lang', currentLang);
-        }
-
-        function loadLanguagePreference() {
-            const savedLang = localStorage.getItem('easyfinance_lang');
-            if (savedLang) {
-                currentLang = savedLang;
-                document.getElementById('languageSelectorAuth').value = currentLang;
-                if(document.getElementById('languageSelector')) {
-                    document.getElementById('languageSelector').value = currentLang;
-                }
-            }
-            switchLanguage(currentLang);
-        }
-
-        // --- Authentication and Security ---
-        function authenticate() {
-            const licenseKey = document.getElementById('licenseKey').value.trim();
-            
-            if (!licenseKey) {
-                alert(getTranslation('Por favor ingrese el código de acceso'));
-                return;
-            }
-            
-            if (licenseKey === systemPassword) {
-                document.getElementById('authScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
-            } else {
-                alert(getTranslation('Incorrect access code'));
-            }
-        }
-
-        // --- System Functionality ---
         function switchLanguage(lang) {
             currentLang = lang;
             document.querySelectorAll('[data-lang]').forEach(el => {
@@ -1508,7 +1556,7 @@
 
             const associatedTransactions = getCurrentTransactions().filter(t => t.category === categoryName);
             if (associatedTransactions.length > 0) {
-                categoryToDeleteInfo = { name: categoryName, type: associatedTransactions[0].type };
+                categoryToDeleteInfo = { name: categoryName };
                 document.getElementById('oldCategoryName').textContent = categoryName;
                 document.getElementById('oldCategoryNameEn').textContent = getTranslation('categories')[categoryName] || categoryName;
                 
