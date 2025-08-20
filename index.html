@@ -520,6 +520,9 @@
                         <p data-lang="es">Seleccione las fechas de inicio y fin, luego genere el informe para ver los datos del período elegido</p>
                         <p data-lang="en" class="hidden">Select start and end dates, then generate the report to see data for the chosen period</p>
                     </div>
+                    
+                    <button class="btn" onclick="window.print()" style="margin-top: 20px;" data-lang="es">🖨️ Imprimir Informe</button>
+                    <button class="btn hidden" onclick="window.print()" style="margin-top: 20px;" data-lang="en">🖨️ Print Report</button>
                 </div>
 
                 <div id="config" class="tab-content hidden">
@@ -596,6 +599,18 @@
                                 <button class="btn btn-danger hidden" id="deleteCategoryBtnEn" style="margin-top: 10px;" data-lang="en">🗑️ Delete</button>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="config-section">
+                        <h3 data-lang="es">💾 Copia de Seguridad</h3>
+                        <h3 data-lang="en" class="hidden">💾 Backup</h3>
+                        <p data-lang="es">Guarda tus datos para tener una copia de seguridad o cargarlos en otro dispositivo.</p>
+                        <p data-lang="en" class="hidden">Save your data to have a backup or load it on another device.</p>
+                        <button class="btn" id="exportBtn" data-lang="es">Descargar Datos</button>
+                        <button class="btn hidden" id="exportBtnEn" data-lang="en">Download Data</button>
+                        <input type="file" id="importFile" style="display:none;">
+                        <button class="btn" id="importBtn" data-lang="es">Cargar Datos</button>
+                        <button class="btn hidden" id="importBtnEn" data-lang="en">Upload Data</button>
                     </div>
                 </div>
 
@@ -708,6 +723,11 @@
             const generateReportBtn = document.getElementById('generateReportBtn');
             const reportContentEl = document.getElementById('reportContent');
 
+            // NUEVOS elementos para importar/exportar
+            const exportBtn = document.getElementById('exportBtn');
+            const importBtn = document.getElementById('importBtn');
+            const importFile = document.getElementById('importFile');
+
             let chart;
             const locales = {
                 es: {
@@ -779,7 +799,7 @@
                         addBtn: "➕ Agregar",
                         deleteCategory: "Eliminar categoría:",
                         selectCategory: "Seleccionar categoría...",
-                        deleteBtn: "🗑️ Eliminar"
+                        deleteBtn: "🗑️️ Eliminar"
                     },
                     manual: {
                         title: "📖 Manual de Instrucciones",
@@ -880,7 +900,7 @@
                         multiUserText: "The system allows for 2 users with completely independent data. You can customize user names from the settings and switch between them from the top bar.",
                         reportsSection: "4. Customizable Reports",
                         reportsText: "Generate reports for any period by selecting start and end dates. Use the quick buttons for common periods (today, week, month, year) or define your own custom range.",
-                        settingsSection: "5. Settings",
+                        settingsSection: "5. Configuración",
                         settingsText: "Customize user names, adjust your monthly budget, and manage custom categories from the settings section.",
                         securitySection: "6. System Security",
                         securityText: "EasyFinance is protected with an access code."
@@ -1472,6 +1492,52 @@
                 updateCategorySelects();
                 updateTransactionsList();
                 updateAllTransactionsList();
+            });
+
+            // NUEVO: Funcionalidad para exportar datos
+            exportBtn.addEventListener('click', () => {
+                const data = localStorage.getItem('easyFinanceUsers');
+                if (data) {
+                    const blob = new Blob([data], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `easyfinance_backup_${new Date().toISOString().slice(0, 10)}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    alert("Datos descargados exitosamente.");
+                } else {
+                    alert("No hay datos para descargar.");
+                }
+            });
+
+            // NUEVO: Funcionalidad para importar datos
+            importBtn.addEventListener('click', () => {
+                importFile.click();
+            });
+
+            importFile.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const importedData = JSON.parse(e.target.result);
+                            if (importedData && importedData.user1 && importedData.user2) {
+                                localStorage.setItem('easyFinanceUsers', e.target.result);
+                                alert("Datos cargados exitosamente. La página se recargará para aplicar los cambios.");
+                                window.location.reload();
+                            } else {
+                                alert("El archivo no tiene el formato de datos correcto.");
+                            }
+                        } catch (error) {
+                            alert("Error al leer el archivo. Asegúrate de que es un archivo de datos válido.");
+                        }
+                    };
+                    reader.readAsText(file);
+                }
             });
 
             loadAndRender();
